@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { CONFIG } from "../src/config.ts";
 import { hermetic } from "./helpers";
 
 const QUERY = "?c=Arclight&t=mainnet&utm_source=x&utm_medium=dm&utm_campaign=dm1";
@@ -39,12 +40,12 @@ test("4 · Cal.com gets forwardQueryParams, the attribution config and a fallbac
     const cal = (window as unknown as { Cal: { ns: Record<string, { q: unknown[][] }> } }).Cal;
     return cal.ns.intro.q.map((args) => Array.from(args as ArrayLike<unknown>)).find((a) => a[0] === "inline")?.[1] as { calLink: string; config: Record<string, string> };
   });
-  expect(inline.calLink).toBe("cipherframe/intro");
+  expect(inline.calLink).toBe(CONFIG.cal.link);
   expect(inline.config).toMatchObject({ layout: "month_view", theme: "dark", c: "Arclight", t: "mainnet", utm_campaign: "dm1" });
   const fallback = page.locator("[data-cal-fallback]");
   await expect(fallback).toBeVisible();
   await expect(fallback).toHaveText("Calendar not loading? Open it in your browser →");
   const u = new URL((await fallback.getAttribute("href"))!);
-  expect(u.origin + u.pathname).toBe("https://cal.com/cipherframe/intro");
+  expect(u.origin + u.pathname).toBe(CONFIG.cal.url);
   expect(u.searchParams.get("utm_source")).toBe("x");
 });

@@ -13,11 +13,11 @@
 export const CONFIG = {
   domain: "https://cipherframe.studio",
   headlineVariant: "A" as "A" | "B",
-  cal: { link: "cipherframe/intro", url: "https://cal.com/cipherframe/intro" },
+  cal: { link: "anas-mansouri-bcw6cz/15min", url: "https://cal.com/anas-mansouri-bcw6cz/15min" },
   tally: { remakeFormUrl: "https://tally.so/r/REMAKE", clipFormUrl: "https://tally.so/r/CLIP" },
   social: {
-    xUrl: "",
-    xHandle: "",
+    xUrl: "https://x.com/Cipherframehq",
+    xHandle: "@Cipherframehq",
     xDmUrl: "",
     telegramUrl: "",
     telegramHandle: "",
