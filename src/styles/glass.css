@@ -1,0 +1,79 @@
+/*
+ * Glass: the site's surface treatment, built on the design system's Card.
+ * Panel at 55% with an 18px blur, a 1px grid-line border with a lighter top edge, no shadows.
+ * Text contrast on glass over midnight: ice 15.2:1, steel 7.9:1 (tests/contrast.spec.ts and
+ * tests/brand.spec.ts measure it in the browser).
+ *
+ * Tier A: full blur. Tier B: cards are solid; only the sticky bar, the nudge and the
+ * before/after handle keep a blur (never more than 3 on screen). Tier C: solid, no blur.
+ */
+.glass {
+  position: relative;
+  background: rgba(23, 33, 63, 0.55);
+  border: 1px solid var(--grid-line);
+  border-top-color: rgba(234, 240, 250, 0.14);
+  border-radius: var(--radius-card);
+  transition: border-color 0.2s var(--ease);
+}
+[data-tier="A"] .glass {
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Card/Featured: one per row */
+.glass--featured {
+  background: rgba(23, 33, 63, 0.7);
+  border: 1px solid var(--signal-mint);
+}
+
+[data-tier="B"] .glass,
+[data-tier="C"] .glass {
+  background: var(--deep-navy);
+}
+[data-tier="B"] .glass--featured,
+[data-tier="C"] .glass--featured {
+  background: var(--panel);
+}
+
+/* Spotlight (pointer: fine only): a mint highlight at 8% that follows the cursor via --mx / --my.
+   The border lightens to steel on hover. */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), rgba(43, 228, 160, 0.08), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .glass.is-lit::after {
+    opacity: 1;
+  }
+  .glass:not(.glass--featured):hover {
+    border-color: var(--steel);
+  }
+}
+
+/* Desk card and the comparison table's Desk column: one short mint highlight travels once
+   around the border every 6s (Tiers A and B; off under reduced motion). */
+.trace {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  overflow: visible;
+  fill: none;
+  pointer-events: none;
+}
+.trace rect {
+  stroke: var(--signal-mint);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 8 92;
+  opacity: 0;
+}
+.motion-ok [data-trace].is-visible > .trace rect {
+  animation: trace 6s linear infinite;
+}

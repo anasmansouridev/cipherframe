@@ -1,0 +1,536 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  background: var(--midnight);
+  color-scheme: dark;
+  scroll-padding-top: 16px;
+}
+/* Smooth only for in-page clicks: a DM deep link (#pricing) must land instantly on arrival. */
+html.is-loaded {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  font: 400 var(--fs-body) / 1.6 var(--font-body);
+  color: var(--ice);
+  background: var(--midnight);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Blue, not mint, so the ring stays visible around a mint button. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--signal-mint);
+  color: var(--cta-ink);
+}
+
+p {
+  max-width: 64ch;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-button);
+  background: var(--signal-mint);
+  color: var(--cta-ink);
+  font-weight: 600;
+  text-decoration: none;
+  translate: 0 -200%;
+}
+.skip:focus {
+  translate: 0 0;
+}
+
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: max(var(--gutter), env(safe-area-inset-left, 0px)) max(var(--gutter), env(safe-area-inset-right, 0px));
+}
+.container--narrow {
+  max-width: calc(860px + 2 * var(--gutter));
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.muted {
+  color: var(--steel);
+}
+
+/* ---------- Type (design-system scale) ---------- */
+.eyebrow {
+  font: 500 var(--fs-label) / 1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--signal-mint);
+  margin-bottom: var(--space-3);
+}
+.eyebrow--coral {
+  color: var(--steel);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.eyebrow--coral::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--alert-coral);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-h1);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-4);
+  text-wrap: balance;
+}
+/* Long personalised headlines ("{Project}'s partnership deserves...") step down so the
+   offer, both CTAs and the risk line still fit above the fold on a 360×640 phone.
+   Never larger than the design-system h1. */
+.h1.is-long {
+  font-size: clamp(2.2rem, 1.4rem + 3.2vw, 3.8rem);
+}
+.h1.is-xlong {
+  font-size: clamp(1.85rem, 1.2rem + 2.8vw, 3.4rem);
+}
+
+.h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-h2);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--space-4);
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-h3);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.lead {
+  color: var(--steel);
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+}
+
+.small {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-button);
+  font: 600 1rem / 1.2 var(--font-body);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  translate: var(--tx, 0) var(--ty, 0);
+  transition:
+    scale 0.15s var(--ease),
+    border-color 0.2s var(--ease),
+    translate 0.25s var(--ease);
+}
+/* Primary CTAs on phones (hero, booking section) keep 56px for the thumb zone; everything else is 48px. */
+@media (max-width: 767.98px) {
+  .btn--xl {
+    min-height: 56px;
+  }
+}
+.btn:active {
+  scale: 0.97;
+}
+.btn .icon {
+  width: 18px;
+  height: 18px;
+}
+.btn--block {
+  width: 100%;
+}
+
+/* Button/Primary: one per view */
+.btn--primary {
+  background: var(--signal-mint);
+  color: var(--cta-ink);
+}
+.btn--primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+  translate: -120% 0;
+  pointer-events: none;
+}
+.motion-ok .btn--primary.is-visible::after {
+  animation: shimmer 7s var(--ease) 2s infinite;
+}
+html.is-interacting .btn--primary::after {
+  animation-play-state: paused !important;
+}
+
+/* Button/Ghost (secondary): glass fill, ice label, 1px steel border (grid-line is too faint for a control) */
+.btn--secondary,
+.btn--ghost {
+  color: var(--ice);
+  background: rgba(23, 33, 63, 0.55);
+  border: 1px solid var(--steel);
+}
+.btn--secondary:hover,
+.btn--ghost:hover {
+  border-color: var(--ice);
+}
+[data-tier="A"] .btn--secondary,
+[data-tier="A"] .btn--ghost {
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+.btn--ghost {
+  padding: 0 var(--space-4);
+}
+
+/* ---------- Pill/Status: mint = confirmed, blue = in flight, coral = reverted ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid currentColor;
+  font: 500 var(--fs-label) / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pill::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.pill--mint {
+  color: var(--signal-mint);
+  background: var(--mint-wash);
+}
+.pill--blue {
+  color: var(--packet-blue);
+  background: var(--blue-wash);
+}
+.pill--coral {
+  color: var(--alert-coral);
+  background: var(--coral-wash);
+}
+
+/* ---------- Tag ---------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  font: 500 0.72rem / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--steel);
+  background: var(--panel);
+}
+.tag--dashed {
+  background: transparent;
+  border: 1px dashed var(--steel);
+}
+.tag--mint {
+  color: var(--cta-ink);
+  background: var(--signal-mint);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+/* ---------- Texture ---------- */
+/* Film grain: Tier A only, a pre-rendered noise tile (src/styles/grain.css), never a live filter. */
+.grain {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.04;
+}
+
+/* Background/Grid: 40px cells of 1px grid-line at 35%, faded with a radial mask. One per view, never animated. */
+.grid-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 40%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse 70% 65% at 50% 40%, #000 30%, transparent 78%);
+}
+
+/* One static soft mint glow (≤10%) behind the hero and the final CTA; the Desk card has its own. */
+.glow {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(ellipse 55% 50% at 62% 42%, rgba(43, 228, 160, 0.1), transparent 70%);
+}
+
+/* ---------- Strip & header ---------- */
+.strip {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--grid-line);
+}
+.strip__text {
+  max-width: none;
+  padding: 7px 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  text-align: center;
+  color: var(--ice);
+}
+@media (min-width: 768px) {
+  .strip {
+    min-height: 40px;
+  }
+}
+
+.site-header {
+  position: relative;
+  z-index: 2;
+}
+.site-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+}
+@media (min-width: 768px) {
+  .site-header__row {
+    height: 72px;
+  }
+}
+
+/* Logo: mark + wordmark set 0.4 × the mark's width away; clear space of one diamond width. */
+.logo {
+  --mark: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--mark) * 0.4);
+  min-height: 44px;
+  text-decoration: none;
+  color: var(--ice);
+}
+.logo__word {
+  font: 600 1.22rem / 1 var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.site-nav {
+  display: none;
+  gap: var(--space-1);
+}
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-button);
+  color: var(--steel);
+  text-decoration: none;
+  font-size: var(--fs-small);
+  font-weight: 500;
+}
+.site-nav a:hover {
+  color: var(--ice);
+}
+@media (min-width: 768px) {
+  .site-nav {
+    display: flex;
+  }
+}
+
+/* ---------- Sections ---------- */
+main {
+  overflow-x: clip; /* entrance animations never cause horizontal scroll */
+}
+.section {
+  position: relative;
+  padding-block: var(--pad-section);
+}
+.section--tight {
+  padding-block: calc(var(--pad-section) * 0.55);
+}
+.section-head {
+  max-width: 780px;
+  margin-bottom: clamp(var(--space-8), 6vw, var(--space-16));
+}
+.section-head--center {
+  margin-inline: auto;
+  text-align: center;
+}
+.section-head--center .lead {
+  margin-inline: auto;
+}
+.section-cta {
+  margin-top: clamp(var(--space-8), 5vw, var(--space-10));
+}
+.section-cta--center {
+  display: flex;
+  justify-content: center;
+}
+
+/* Motif/Chain: panel blocks, 1.5px ice outline, 4px radius, last block mint */
+.divider {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 12px;
+}
+.divider i {
+  display: block;
+  width: 16px;
+  height: 10px;
+  border: 1.5px solid var(--ice);
+  border-radius: 4px;
+  background: var(--panel);
+}
+.divider i + i {
+  margin-left: 10px;
+  position: relative;
+}
+.divider i + i::before {
+  content: "";
+  position: absolute;
+  right: calc(100% + 1.5px);
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: var(--grid-line);
+}
+.divider i:last-child {
+  border-color: var(--signal-mint);
+  background: var(--signal-mint);
+}

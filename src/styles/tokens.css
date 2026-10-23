@@ -1,0 +1,140 @@
+/* Self-hosted fonts (@fontsource, latin subset). Only Space Grotesk 600 is preloaded (the H1). */
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-600-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Metric-matched fallbacks (size-adjust) so the swap causes no layout shift. */
+@font-face {
+  font-family: "Space Grotesk Fallback";
+  src: local("Arial"), local("Helvetica"), local("Liberation Sans"), local("Roboto");
+  size-adjust: 109.69%;
+  ascent-override: 89.71%;
+  descent-override: 26.62%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial"), local("Helvetica"), local("Liberation Sans"), local("Roboto");
+  size-adjust: 107.12%;
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "JetBrains Mono Fallback";
+  src: local("Courier New"), local("Liberation Mono"), local("Menlo"), local("Courier");
+  size-adjust: 99.98%;
+  ascent-override: 102.02%;
+  descent-override: 30%;
+  line-gap-override: 0%;
+}
+
+:root {
+  /* ---- Cipherframe design system (Claude Design, 22 Oct 2026) ----
+     Meaning is fixed: mint = confirmed, blue = in flight, coral = reverted.
+     Colour split: 60% midnight/deep-navy, 30% ice/panel, 10% signal-mint/packet-blue. */
+
+  /* Backgrounds */
+  --midnight: #0a0f1e; /* page */
+  --deep-navy: #111933; /* cards */
+  --panel: #17213f; /* raised and featured surfaces */
+  --grid-line: #26324f; /* 1px dividers and the grid; decorative only (1.5:1), never text or control borders */
+
+  /* Text */
+  --ice: #eaf0fa; /* 16.7:1 on midnight, 13.8:1 on panel */
+  --steel: #a3afc6; /* secondary text, 8.6:1 on midnight, 7.2:1 on panel */
+
+  /* Accents */
+  --signal-mint: #2be4a0; /* primary action, CONFIRMED, the logo diamond; 11.6:1 */
+  --cta-ink: #04140d; /* text on mint; 11.4:1 */
+  --packet-blue: #7b9bff; /* IN FLIGHT; 7.3:1 */
+  --alert-coral: #ff6b57; /* REVERTED only, ≤5% of any screen; 6.8:1 */
+
+  /* Washes: pill backgrounds only */
+  --mint-wash: #2be4a01f;
+  --blue-wash: #7b9bff1f;
+  --coral-wash: #ff6b571f;
+
+  --focus-ring: var(--packet-blue);
+
+  /* Type */
+  --font-display: "Space Grotesk", "Space Grotesk Fallback", system-ui, sans-serif;
+  --font-body: Inter, "Inter Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, monospace;
+
+  --fs-h1: clamp(2.4rem, 1.5rem + 3.6vw, 4.2rem);
+  --fs-h2: clamp(1.75rem, 1.3rem + 1.8vw, 2.6rem);
+  --fs-h3: 1.375rem;
+  --fs-price: 2.75rem;
+  --fs-lead: 1.25rem;
+  --fs-body: 1.0625rem;
+  --fs-small: 0.9375rem;
+  --fs-label: 0.78rem;
+
+  /* Shape */
+  --radius-sm: 6px; /* tags */
+  --radius-button: 10px;
+  --radius-card: 14px; /* cards, glass, price cards */
+  --radius-pill: 999px;
+
+  /* Spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-16: 64px;
+
+  --pad-section: clamp(64px, 10vw, 128px);
+  --container: 1200px;
+  --gutter: 16px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sticky-h: 0px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 40px;
+  }
+}

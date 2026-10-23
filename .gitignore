@@ -1,0 +1,10 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+blob-report/
+lighthouse-*.html
+lighthouse-summary.json
+bundle-report.json
+*.log
+.DS_Store

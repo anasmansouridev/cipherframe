@@ -1,0 +1,43 @@
+import { expect, test } from "@playwright/test";
+import { hermetic } from "./helpers";
+
+test("6 · strip shows the countdown before event.start", async ({ page }) => {
+  await hermetic(page);
+  await page.clock.setFixedTime(new Date("2026-10-22T12:00:00Z"));
+  await page.goto("/");
+  const strip = page.locator("#strip [data-strip]");
+  await expect(strip).toBeVisible();
+  await expect(strip).toHaveText("◆ Solana Breakpoint · 15–17 Nov · London — launch-week slots: 4 left · 23d 12h to go");
+});
+
+test("6 · strip shows the slots-only message after event.start", async ({ page }) => {
+  await hermetic(page);
+  await page.clock.setFixedTime(new Date("2026-11-20T09:00:00Z"));
+  await page.goto("/");
+  await expect(page.locator("#strip [data-strip]")).toHaveText("◆ 4 Desk slots open this month · 3 free remakes a day");
+});
+
+test("6 · strip is hidden when deskSlotsLeft = 0", async ({ page }) => {
+  await hermetic(page);
+  await page.addInitScript(() => (window.__CF_OVERRIDES__ = { deskSlotsLeft: 0 }));
+  await page.goto("/");
+  await expect(page.locator("#strip")).toBeHidden();
+});
+
+test("6 · founding block is hidden when foundingSlotsLeft = 0, and reflects the count otherwise", async ({ page }) => {
+  await hermetic(page);
+  await page.goto("/");
+  await expect(page.locator("[data-founding]")).toHaveCount(1);
+  await expect(page.locator("#founding-title")).toHaveText("3 of 3 founding Desks left: $2,100/month for 3 months.");
+  await expect(page.locator(".pip")).toHaveCount(3);
+  await expect(page.locator(".pip.is-taken")).toHaveCount(0);
+
+  await page.addInitScript(() => (window.__CF_OVERRIDES__ = { foundingSlotsLeft: 1 }));
+  await page.reload();
+  await expect(page.locator("#founding-title")).toHaveText("1 of 3 founding Desks left: $2,100/month for 3 months.");
+  await expect(page.locator(".pip.is-taken")).toHaveCount(2);
+
+  await page.addInitScript(() => (window.__CF_OVERRIDES__ = { foundingSlotsLeft: 0 }));
+  await page.reload();
+  await expect(page.locator("[data-founding]")).toHaveCount(0);
+});

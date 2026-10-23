@@ -1,0 +1,18 @@
+# Cipherframe
+
+> Motion design studio for funded or live crypto teams. Every announcement (partnerships, listings, mainnets, upgrades, raises) animated within 48 hours, at flat prices from $750. Paid in USDC, USDT or card. Never memecoins, never project tokens.
+
+## Offers
+
+- Announcement Clip: $750. 10–15s, 16:9 + 1:1 + 9:16, captions, 1 revision, 48 hours.
+- Feature Video: $1,800. 30–45s with script, 3 formats, 2 revisions, 4 business days.
+- Announcement Desk: $3,000/month. Up to 6 announcements a month, brand motion kit in month 1, priority queue in launch weeks, 48h per clip. Cancel with 30 days' notice.
+- Protocol Explainer: $3,500. 60–90s, script + storyboard, 8 business days.
+- Launch Pack: $6,500. 45s trailer, 60s explainer, 4 announcement clips, logo animation, 12 business days.
+
+## Links
+
+- [Home](__DOMAIN__/)
+- [Pricing](__DOMAIN__/#pricing)
+- [FAQ](__DOMAIN__/#faq)
+- [Book a 15-min call](__DOMAIN__/#book)
