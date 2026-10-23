@@ -1,8 +1,17 @@
 import { expect, test } from "@playwright/test";
 import { hermetic } from "./helpers";
 
+const EVENT = { name: "Solana Breakpoint", dates: "15–17 Nov", place: "London", start: "2026-11-15" };
+
+test("6 · no event configured: strip shows only slots and free remakes", async ({ page }) => {
+  await hermetic(page);
+  await page.goto("/");
+  await expect(page.locator("#strip [data-strip]")).toHaveText("◆ 4 Desk slots open this month · 3 free remakes a day");
+});
+
 test("6 · strip shows the countdown before event.start", async ({ page }) => {
   await hermetic(page);
+  await page.addInitScript((event) => (window.__CF_OVERRIDES__ = { event }), EVENT);
   await page.clock.setFixedTime(new Date("2026-10-22T12:00:00Z"));
   await page.goto("/");
   const strip = page.locator("#strip [data-strip]");
@@ -12,6 +21,7 @@ test("6 · strip shows the countdown before event.start", async ({ page }) => {
 
 test("6 · strip shows the slots-only message after event.start", async ({ page }) => {
   await hermetic(page);
+  await page.addInitScript((event) => (window.__CF_OVERRIDES__ = { event }), EVENT);
   await page.clock.setFixedTime(new Date("2026-11-20T09:00:00Z"));
   await page.goto("/");
   await expect(page.locator("#strip [data-strip]")).toHaveText("◆ 4 Desk slots open this month · 3 free remakes a day");

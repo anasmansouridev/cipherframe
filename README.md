@@ -70,8 +70,8 @@ Change the file, then rebuild. The build writes the values into the HTML, so lin
 | `cal.link` / `cal.url` | Cal.com event (`user/event`) for the inline embed, and the full URL for the "Open it in your browser" fallback. |
 | `tally.remakeFormUrl` / `clipFormUrl` | Your two Tally forms. Every Tally button opens these in a new tab with `c`, `t` and `utm_*` appended. |
 | `social.*` | All optional, and empty by default. With no X account, the "Prefer DMs? Message @handle on X" line, the `twitter:site` tag and the X link in the footer all disappear. `xUrl` and `xHandle` (both needed) power the DM line and the handles box; `xDmUrl` is a direct DM link, and if empty the profile URL is used. Telegram and LinkedIn only appear when set. The footer box always lists the site itself. |
-| `email` | Footer email with a copy button. It must be a mailbox you actually receive: create `hello@cipherframe.studio` (or change this value) before launch. |
-| `event` | Strip text. `start: "YYYY-MM-DD"` is read as midnight UTC; a full ISO time such as `"2026-11-15T09:00:00Z"` is used as-is. Once the date passes, the strip switches to the slots-only message. The countdown never resets. |
+| `email` | Footer email with a copy button. It must be a mailbox you actually receive: create `contact@cipherframe.studio` (or change this value) before launch. |
+| `event` | Strip text. Empty by default (no event; the strip shows only slots and free remakes). `start: "YYYY-MM-DD"` is read as midnight UTC; a full ISO time such as `"2026-11-15T09:00:00Z"` is used as-is. Once the date passes, the strip switches to the slots-only message. The countdown never resets. |
 | `deskSlotsLeft` | Must stay true. `0` hides the strip. |
 | `foundingSlotsLeft` | Must stay true. `0` hides the founding block. Pips fill for taken slots (3 total). |
 | `freeRemakesPerDay` | Used everywhere the page says "3 a day". |
@@ -158,7 +158,7 @@ Cal.com receives the same values: `forwardQueryParams` is on, and they're also p
 ## 6. Manual checklist (tick before launch)
 
 - [ ] Fill in `src/config.ts`: `domain`, Cal.com link, both Tally URLs, founder name (and a real photo or none), event, slot counts. X / Telegram / LinkedIn are optional.
-- [ ] Create the mailbox in `email` (default `hello@cipherframe.studio`) or change it, so enquiries reach you.
+- [ ] Create the mailbox in `email` (default `contact@cipherframe.studio`) or change it, so enquiries reach you.
 - [ ] Test inside the **X app** on iOS and on Android.
 - [ ] Test inside the **LinkedIn app** on iOS and on Android.
 - [ ] Book a test call through the inline calendar, and once through the "Open it in your browser" link.
@@ -274,7 +274,7 @@ Events:
 
 Run on 2026-10-22, against the production build (`vite preview`).
 
-### Playwright: 175 passed, 0 failed
+### Playwright: 181 passed, 0 failed
 
 That is the original 136, plus 27 runs of the 8 design-system checks in `tests/brand.spec.ts`, plus 12 runs of the 2 checks in `tests/socials.spec.ts`. Chromium at all six viewports. A dash (–) means the test is scoped to other viewports on purpose: 360×640-only above-the-fold checks, mobile-only toggle and sticky bar, desktop-only slider, and build checks that run once. 71 runs are skipped that way.
 
@@ -419,7 +419,8 @@ Brought onto the Cipherframe design system; behaviour, layout, copy (except the 
 ### Going live on Hostinger (23 Oct 2026)
 
 36. **Domain** is `https://cipherframe.studio`. The tests read it from `src/config.ts` instead of hard-coding it.
-37. **Email** changed from `hello@cipherframe.com` (a domain that is not yours) to `hello@cipherframe.studio`. You need to create that mailbox, or set another address, before launch.
+37. **Email** changed from `hello@cipherframe.com` (a domain that is not yours) to `contact@cipherframe.studio`. You need to create that mailbox, or set another address, before launch.
 38. **Social accounts** are empty for now. The page hides everything that depends on them: the "Prefer DMs? Message @handle on X" line, the `twitter:site` tag and the X link in the footer. The footer box then lists just the site. Fill the handles in later and rebuild; the page picks them up.
 39. **Docker, not static upload.** A Hostinger VPS runs EasyPanel, which deploys containers, so the repo has a `Dockerfile` and `nginx.conf`. The security headers were Cloudflare-only (`_headers`), so the image converts that same file into nginx headers at build.
 40. **Not changed:** the Cal.com link, Tally URLs, founder name, event strip (`Solana Breakpoint`, 15–17 Nov, London) and slot counts (4 Desk, 3 founding) are still the defaults. They need your real values before you send any DMs.
+41. **Details filled in:** founder name Anas Mansouri, email contact@cipherframe.studio, event removed. Cal.com, Tally and the slot counts are still placeholders.

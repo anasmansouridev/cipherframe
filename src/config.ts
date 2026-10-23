@@ -23,10 +23,10 @@ export const CONFIG = {
     telegramHandle: "",
     linkedinUrl: "",
   },
-  email: "hello@cipherframe.studio",
+  email: "contact@cipherframe.studio",
   // start: "YYYY-MM-DD" is read as midnight UTC (London is on UTC in November).
   // A full ISO timestamp such as "2026-11-15T09:00:00Z" is used as-is.
-  event: { name: "Solana Breakpoint", dates: "15–17 Nov", place: "London", start: "2026-11-15" },
+  event: { name: "", dates: "", place: "", start: "" }, // empty name = no event: the strip shows only slots and free remakes
   deskSlotsLeft: 4, // must stay true; 0 hides the strip
   foundingSlotsLeft: 3, // must stay true; 0 hides the founding block
   freeRemakesPerDay: 3,
@@ -34,7 +34,7 @@ export const CONFIG = {
   testimonials: [] as { quote: string; name: string; role: string; project: string; permissionConfirmed: boolean }[],
   clientLogos: [] as { name: string; src: string; permissionConfirmed: boolean }[],
   videos: { hero: "", mainnet: "", lending: "", payment: "" },
-  founder: { name: "[Your name]", photo: "", note: "" }, // empty note = default text
+  founder: { name: "Anas Mansouri", photo: "", note: "" }, // empty note = default text
   analytics: { cfBeaconToken: "", eventEndpoint: "" },
 };
 
