@@ -284,8 +284,8 @@ export function mountWebGL(host: HTMLElement, opts: WebGLOptions = {}): HeroCont
         const k = Math.min(1, Math.max(0, (x - a) / (b - a)));
         return k * k * (3 - 2 * k);
       };
-      target.converge = s(0.02, 0.5, p);
-      target.dissolve = s(0.62, 0.95, p);
+      target.converge = s(0, 0.2, p);
+      target.dissolve = s(0.5, 0.9, p);
     },
     destroy() {
       loop.stop();
