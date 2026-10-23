@@ -116,12 +116,12 @@ function handlesBlock(): string {
 function foundingBlock(): string {
   const left = CONFIG.foundingSlotsLeft;
   if (!(left > 0)) return "";
-  const total = 3;
+  const total = CONFIG.foundingTotal;
   const pips = Array.from({ length: total }, (_, i) => (i < total - left ? `<span class="pip is-taken"><i></i></span>` : `<span class="pip"></span>`)).join("");
   return `<aside class="founding glass" data-founding aria-labelledby="founding-title">
           <div class="founding__pips" data-pips role="img" aria-label="${total - left} of ${total} founding Desks taken">${pips}</div>
           <div>
-            <h3 id="founding-title" class="founding__title"><span data-founding-left>${left}</span> of 3 founding Desks left: $2,100/month for 3 months.</h3>
+            <h3 id="founding-title" class="founding__title"><span data-founding-left>${left}</span> of <span data-founding-total>${total}</span> founding Desks left: $990/month for 3 months.</h3>
             <p>In return: a short case study (your static post vs the animated one) and permission to show the work.</p>
           </div>
         </aside>`;
@@ -263,16 +263,16 @@ function jsonLd(html: string): string {
       logo: `${domain}/favicon.svg`,
       email: CONFIG.email,
       areaServed: "Worldwide",
-      priceRange: "$750–$6,500",
+      priceRange: "$200–$1,490",
       ...(sameAs.length ? { sameAs } : {}),
       makesOffer: [
-        offer("Announcement Clip", 750, "10–15s announcement video in 16:9, 1:1 and 9:16 with burned-in captions and 1 revision, delivered in 48 hours."),
-        offer("Feature Video", 1800, "30–45s feature video with script, 3 formats and 2 revisions, delivered in 4 business days."),
-        offer("Announcement Desk", 3000, "Up to 6 announcements a month, a brand motion kit in month 1 and a priority queue in launch weeks. 48h per clip.", {
-          priceSpecification: { "@type": "UnitPriceSpecification", price: "3000", priceCurrency: "USD", unitCode: "MON", unitText: "month" },
+        offer("Announcement Clip", 200, "10–15s announcement video in 16:9, 1:1 and 9:16 with burned-in captions and 1 revision, delivered in 48 hours."),
+        offer("Feature Video", 350, "30–45s feature video with script, 3 formats and 2 revisions, delivered in 4 business days."),
+        offer("Unlimited Desk", 1490, "Unlimited announcement clips, one request at a time, each delivered in 48 hours, plus 1 feature video a month, a brand motion kit in month 1 and priority in launch weeks.", {
+          priceSpecification: { "@type": "UnitPriceSpecification", price: "1490", priceCurrency: "USD", billingDuration: "P1M", unitCode: "MON", unitText: "month" },
         }),
-        offer("Protocol Explainer", 3500, "60–90s how-it-works explainer with script and storyboard, delivered in 8 business days."),
-        offer("Launch Pack", 6500, "45s trailer, 60s explainer, 4 announcement clips and a logo animation, delivered in 12 business days."),
+        offer("Protocol Explainer", 790, "60–90s how-it-works explainer with script and storyboard, delivered in 8 business days."),
+        offer("Launch Pack", 1290, "45s trailer, 60s explainer, 4 announcement clips and a logo animation, delivered in 12 business days."),
       ],
     },
     {

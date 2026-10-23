@@ -27,7 +27,6 @@ const overrides = typeof window !== "undefined" ? window.__CF_OVERRIDES__ : unde
 if (overrides && typeof overrides === "object") merge(CONFIG as unknown as Record<string, unknown>, overrides as Record<string, unknown>);
 
 export const CFG: Config = CONFIG;
-export const FOUNDING_TOTAL = 3;
 
 export const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document): T | null => root.querySelector<T>(sel);
 export const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document): T[] => Array.from(root.querySelectorAll<T>(sel));

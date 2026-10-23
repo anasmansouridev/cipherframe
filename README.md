@@ -73,7 +73,8 @@ Change the file, then rebuild. The build writes the values into the HTML, so lin
 | `email` | Footer email with a copy button. It must be a mailbox you actually receive: create `contact@cipherframe.studio` (or change this value) before launch. |
 | `event` | Strip text. Empty by default (no event; the strip shows only slots and free remakes). `start: "YYYY-MM-DD"` is read as midnight UTC; a full ISO time such as `"2026-11-15T09:00:00Z"` is used as-is. Once the date passes, the strip switches to the slots-only message. The countdown never resets. |
 | `deskSlotsLeft` | Must stay true. `0` hides the strip. |
-| `foundingSlotsLeft` | Must stay true. `0` hides the founding block. Pips fill for taken slots (3 total). |
+| `foundingTotal` | How many founding Desks exist in total (5): drives the "of 5" headline and the number of pips. |
+| `foundingSlotsLeft` | Must stay true. `0` hides the founding block. Pips fill for taken slots. |
 | `freeRemakesPerDay` | Used everywhere the page says "3 a day". |
 | `remakes[]` | "From our daily remake series" row; it renders only when there are entries. Each card is labelled **UNOFFICIAL CONCEPT · NOT AFFILIATED** and links to the X post. Use a 16:9 WebP/AVIF `poster`. |
 | `testimonials[]`, `clientLogos[]` | Rendered **only** for entries with `permissionConfirmed: true`. The testimonial strip appears after `#work` and the logo row under the hero proof row. With no confirmed entries, those blocks are not in the DOM at all. |
@@ -163,7 +164,7 @@ Cal.com receives the same values: `forwardQueryParams` is on, and they're also p
 - [ ] Test inside the **LinkedIn app** on iOS and on Android.
 - [ ] Book a test call through the inline calendar, and once through the "Open it in your browser" link.
 - [ ] Submit both Tally forms from a DM-style link and confirm `c`, `t` and the UTMs arrived in the hidden fields.
-- [ ] Click every link: hero CTAs, sticky bar, pricing buttons, FAQ "Order a $750 clip", the DM line, the footer handles, email copy.
+- [ ] Click every link: hero CTAs, sticky bar, pricing buttons, FAQ "Order a $200 clip", the DM line, the footer handles, email copy.
 - [ ] Check the DM button opens X (DM link if `xDmUrl` is set).
 - [ ] On a low-end Android, open the console and check `document.documentElement.dataset.tier` (expect `B` or `C`, with smooth scrolling).
 - [ ] Check the strip's slot count and the founding count are true today.
@@ -274,7 +275,7 @@ Events:
 
 Run on 2026-10-22, against the production build (`vite preview`).
 
-### Playwright: 181 passed, 0 failed
+### Playwright: 182 passed, 0 failed
 
 That is the original 136, plus 27 runs of the 8 design-system checks in `tests/brand.spec.ts`, plus 12 runs of the 2 checks in `tests/socials.spec.ts`. Chromium at all six viewports. A dash (–) means the test is scoped to other viewports on purpose: 360×640-only above-the-fold checks, mobile-only toggle and sticky bar, desktop-only slider, and build checks that run once. 71 runs are skipped that way.
 
@@ -422,5 +423,6 @@ Brought onto the Cipherframe design system; behaviour, layout, copy (except the 
 37. **Email** changed from `hello@cipherframe.com` (a domain that is not yours) to `contact@cipherframe.studio`. You need to create that mailbox, or set another address, before launch.
 38. **Social accounts** are empty for now. The page hides everything that depends on them: the "Prefer DMs? Message @handle on X" line, the `twitter:site` tag and the X link in the footer. The footer box then lists just the site. Fill the handles in later and rebuild; the page picks them up.
 39. **Docker, not static upload.** A Hostinger VPS runs EasyPanel, which deploys containers, so the repo has a `Dockerfile` and `nginx.conf`. The security headers were Cloudflare-only (`_headers`), so the image converts that same file into nginx headers at build.
-40. **Not changed:** the Cal.com link, Tally URLs, founder name, event strip (`Solana Breakpoint`, 15–17 Nov, London) and slot counts (4 Desk, 3 founding) are still the defaults. They need your real values before you send any DMs.
+40. **Not changed:** the Cal.com link, Tally URLs, founder name, event strip (`Solana Breakpoint`, 15–17 Nov, London) and slot counts (4 Desk, 5 founding) are still the defaults. They need your real values before you send any DMs.
 41. **Details filled in:** founder name Anas Mansouri, email contact@cipherframe.studio, event removed. Cal.com, Tally and the slot counts are still placeholders.
+42. **New price ladder (23 Oct 2026):** Clip $200, Feature Video $350, Unlimited Desk $1,490/month (prepay $3,990), Protocol Explainer $790, Launch Pack $1,290, 5 founding Desks at $990/month for 3 months. "Announcement Desk" is now "Unlimited Desk" everywhere visible. The founding total lives in `CONFIG.foundingTotal`. `tests/build.spec.ts` fails if an old price returns.

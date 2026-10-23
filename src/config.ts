@@ -28,7 +28,8 @@ export const CONFIG = {
   // A full ISO timestamp such as "2026-11-15T09:00:00Z" is used as-is.
   event: { name: "", dates: "", place: "", start: "" }, // empty name = no event: the strip shows only slots and free remakes
   deskSlotsLeft: 4, // must stay true; 0 hides the strip
-  foundingSlotsLeft: 3, // must stay true; 0 hides the founding block
+  foundingSlotsLeft: 5, // must stay true; 0 hides the founding block
+  foundingTotal: 5, // how many founding Desks exist in total (drives "of 5" and the pips)
   freeRemakesPerDay: 3,
   remakes: [] as { project: string; announcement: string; xPostUrl: string; poster: string }[],
   testimonials: [] as { quote: string; name: string; role: string; project: string; permissionConfirmed: boolean }[],

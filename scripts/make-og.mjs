@@ -29,7 +29,7 @@ svg.hex{position:absolute;right:90px;top:150px}
 <div class="logo"><svg width="40" height="40" viewBox="0 0 28 28"><path d="M8 4H4v20h4" fill="none" stroke="#EAF0FA" stroke-width="2.5"/><path d="M20 4h4v20h-4" fill="none" stroke="#EAF0FA" stroke-width="2.5"/><path d="M14 8.5 19.5 14 14 19.5 8.5 14Z" fill="#2BE4A0"/></svg>cipherframe</div>
 <div class="eyebrow">MOTION DESIGN FOR CRYPTO TEAMS WHO SHIP</div>
 <h1>Every announcement, animated in 48 <span class="u">hours.</span></h1>
-<div class="foot">Flat prices from $750 · Paid in USDC or card</div>
+<div class="foot">Flat prices from $200 · Paid in USDC or card</div>
 </div></body></html>`;
 
 const browser = await chromium.launch();

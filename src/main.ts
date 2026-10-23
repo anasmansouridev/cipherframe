@@ -15,7 +15,7 @@ import { initTally } from "./integrations/tally";
 import type { HeroController } from "./motion/field";
 import { registry } from "./motion/registry";
 import { applyPersonalization } from "./personalize";
-import { CFG, FOUNDING_TOTAL, $, $$, afterLoad, idle, isMobileWidth, setSession } from "./runtime";
+import { CFG, $, $$, afterLoad, idle, isMobileWidth, setSession } from "./runtime";
 import { detectTier, forcedTier, getTier, hasWebGL2, lowerTier, measureFps, setTier, type Tier } from "./tier";
 import { captureFirstTouch } from "./utm";
 
@@ -77,7 +77,9 @@ function syncFacts(): void {
     const left = CFG.foundingSlotsLeft;
     if (!(left > 0)) founding.remove();
     else {
-      const taken = Math.max(0, FOUNDING_TOTAL - left);
+      const total = CFG.foundingTotal;
+      const taken = Math.max(0, total - left);
+      $$("[data-founding-total]", founding).forEach((el) => (el.textContent = String(total)));
       $$("[data-founding-left]", founding).forEach((el) => (el.textContent = String(left)));
       $$(".pip", founding).forEach((pip, i) => {
         const isTaken = i < taken;
@@ -85,7 +87,7 @@ function syncFacts(): void {
         if (isTaken && !pip.firstElementChild) pip.append(document.createElement("i"));
         if (!isTaken) pip.replaceChildren();
       });
-      $("[data-pips]", founding)?.setAttribute("aria-label", `${taken} of ${FOUNDING_TOTAL} founding Desks taken`);
+      $("[data-pips]", founding)?.setAttribute("aria-label", `${taken} of ${total} founding Desks taken`);
     }
   }
   $$("[data-remakes-per-day]").forEach((el) => (el.textContent = String(CFG.freeRemakesPerDay)));

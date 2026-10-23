@@ -38,14 +38,14 @@ test("6 · founding block is hidden when foundingSlotsLeft = 0, and reflects the
   await hermetic(page);
   await page.goto("/");
   await expect(page.locator("[data-founding]")).toHaveCount(1);
-  await expect(page.locator("#founding-title")).toHaveText("3 of 3 founding Desks left: $2,100/month for 3 months.");
-  await expect(page.locator(".pip")).toHaveCount(3);
+  await expect(page.locator("#founding-title")).toHaveText("5 of 5 founding Desks left: $990/month for 3 months.");
+  await expect(page.locator(".pip")).toHaveCount(5);
   await expect(page.locator(".pip.is-taken")).toHaveCount(0);
 
   await page.addInitScript(() => (window.__CF_OVERRIDES__ = { foundingSlotsLeft: 1 }));
   await page.reload();
-  await expect(page.locator("#founding-title")).toHaveText("1 of 3 founding Desks left: $2,100/month for 3 months.");
-  await expect(page.locator(".pip.is-taken")).toHaveCount(2);
+  await expect(page.locator("#founding-title")).toHaveText("1 of 5 founding Desks left: $990/month for 3 months.");
+  await expect(page.locator(".pip.is-taken")).toHaveCount(4);
 
   await page.addInitScript(() => (window.__CF_OVERRIDES__ = { foundingSlotsLeft: 0 }));
   await page.reload();

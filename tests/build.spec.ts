@@ -34,6 +34,19 @@ test("10 · banned-content scan of the built HTML/JS", () => {
   expect(hits).toEqual([]);
 });
 
+test("prices: no old price survives in the built HTML, and every new price is present", () => {
+  const html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
+  const old = ["$750", "$1,800", "$3,000", "$3,500", "$6,500", "$2,100", "$8,100"];
+  expect(old.filter((p) => html.includes(p))).toEqual([]);
+  const now = ["$200", "$350", "$1,490", "$790", "$1,290", "$990"];
+  expect(now.filter((p) => !html.includes(p))).toEqual([]);
+  expect(html).not.toMatch(/Announcement Desk|up to 6|Up to 6/);
+  expect(html).toContain("Unlimited Desk");
+  const ld = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)![1]);
+  const desk = ld["@graph"][0].makesOffer.find((o: { itemOffered: { name: string } }) => o.itemOffered.name === "Unlimited Desk");
+  expect(desk.priceSpecification.billingDuration).toBe("P1M");
+});
+
 test("CSP: the inline boot script's sha256 is in dist/_headers, and no third-party script hosts beyond Cal.com and Cloudflare", () => {
   const html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
   const headers = fs.readFileSync(path.join(dist, "_headers"), "utf8");
@@ -58,7 +71,7 @@ test("SEO: title, description, canonical, OG/Twitter and JSON-LD (no ratings)", 
   const ld = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)![1]);
   const [studio, faq] = ld["@graph"];
   expect(studio["@type"]).toBe("ProfessionalService");
-  expect(studio.makesOffer.map((o: { price: string }) => o.price)).toEqual(["750", "1800", "3000", "3500", "6500"]);
+  expect(studio.makesOffer.map((o: { price: string }) => o.price)).toEqual(["200", "350", "1490", "790", "1290"]);
   expect(faq["@type"]).toBe("FAQPage");
   expect(faq.mainEntity).toHaveLength(13);
   expect(JSON.stringify(ld)).not.toMatch(/aggregateRating|ratingValue|review/i);
