@@ -2,8 +2,10 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
+import { CONFIG } from "../src/config.ts";
 
 const dist = path.resolve("dist");
+const DOMAIN = CONFIG.domain.replace(/\/+$/, "");
 const builtFiles = () =>
   [path.join(dist, "index.html"), ...fs.readdirSync(path.join(dist, "assets")).map((f) => path.join(dist, "assets", f))].filter((f) => /\.(html|js|css)$/.test(f));
 
@@ -44,15 +46,15 @@ test("CSP: the inline boot script's sha256 is in dist/_headers, and no third-par
   expect(scriptSrc.filter((s) => s.startsWith("https://"))).toEqual(["https://app.cal.com", "https://static.cloudflareinsights.com"]);
   for (const h of ["X-Content-Type-Options: nosniff", "Referrer-Policy: strict-origin-when-cross-origin", "Permissions-Policy: camera=(), microphone=(), geolocation=()"])
     expect(headers).toContain(h);
-  expect(fs.readFileSync(path.join(dist, "robots.txt"), "utf8")).toContain("Sitemap: https://cipherframe.com/sitemap.xml");
-  expect(fs.readFileSync(path.join(dist, "sitemap.xml"), "utf8")).toContain("<loc>https://cipherframe.com/</loc>");
+  expect(fs.readFileSync(path.join(dist, "robots.txt"), "utf8")).toContain(`Sitemap: ${DOMAIN}/sitemap.xml`);
+  expect(fs.readFileSync(path.join(dist, "sitemap.xml"), "utf8")).toContain(`<loc>${DOMAIN}/</loc>`);
 });
 
 test("SEO: title, description, canonical, OG/Twitter and JSON-LD (no ratings)", () => {
   const html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
   expect(html).toContain("<title>Cipherframe — Every announcement, animated in 48 hours</title>");
   expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />');
-  expect(html).toContain('<link rel="canonical" href="https://cipherframe.com/" />');
+  expect(html).toContain(`<link rel="canonical" href="${DOMAIN}/" />`);
   const ld = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)![1]);
   const [studio, faq] = ld["@graph"];
   expect(studio["@type"]).toBe("ProfessionalService");

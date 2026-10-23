@@ -11,19 +11,19 @@
  * - remakes are labelled "UNOFFICIAL CONCEPT · NOT AFFILIATED" automatically.
  */
 export const CONFIG = {
-  domain: "https://cipherframe.com",
+  domain: "https://cipherframe.studio",
   headlineVariant: "A" as "A" | "B",
   cal: { link: "cipherframe/intro", url: "https://cal.com/cipherframe/intro" },
   tally: { remakeFormUrl: "https://tally.so/r/REMAKE", clipFormUrl: "https://tally.so/r/CLIP" },
   social: {
-    xUrl: "https://x.com/cipherframe",
-    xHandle: "@cipherframe",
+    xUrl: "",
+    xHandle: "",
     xDmUrl: "",
     telegramUrl: "",
     telegramHandle: "",
     linkedinUrl: "",
   },
-  email: "hello@cipherframe.com",
+  email: "hello@cipherframe.studio",
   // start: "YYYY-MM-DD" is read as midnight UTC (London is on UTC in November).
   // A full ISO timestamp such as "2026-11-15T09:00:00Z" is used as-is.
   event: { name: "Solana Breakpoint", dates: "15–17 Nov", place: "London", start: "2026-11-15" },

@@ -205,6 +205,19 @@ function mainnetMediaBlock(): string {
             </div>`;
 }
 
+/** "Prefer DMs? Message @handle on X." Rendered only when an X handle and a link exist; with no X account it is absent. */
+function dmLineBlock(): string {
+  const s = CONFIG.social;
+  const href = s.xDmUrl || s.xUrl;
+  if (!s.xHandle || !href) return "";
+  return `<p class="book__dm">Prefer DMs? Message <a href="${esc(href)}" target="_blank" rel="noopener" data-cta="dm" data-loc="book"><strong>${esc(s.xHandle)}</strong></a> on X. DM "DESK".</p>`;
+}
+
+/** twitter:site only when there is an X handle (an empty value is invalid). */
+function twitterSiteBlock(): string {
+  return CONFIG.social.xHandle ? `<meta name="twitter:site" content="${esc(CONFIG.social.xHandle)}" />` : "";
+}
+
 /** A rendered hero loop (CONFIG.videos.hero) replaces the code-generated transaction field. */
 function heroVideoBlock(): string {
   if (!CONFIG.videos.hero) return "";
@@ -291,6 +304,8 @@ function renderBlocks(html: string): string {
     founderNote: founderNoteBlock,
     mainnetMedia: mainnetMediaBlock,
     heroVideo: heroVideoBlock,
+    dmLine: dmLineBlock,
+    twitterSite: twitterSiteBlock,
     play: (key, ...title) => playButton(key as keyof typeof CONFIG.videos, title.join(":")),
   };
   return html.replace(/<!--@([a-zA-Z]+)((?::[^>]*?)?)-->/g, (whole, name: string, args: string) => {

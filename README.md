@@ -4,7 +4,7 @@ A one-page sales funnel for Cipherframe, a motion design studio for crypto teams
 
 - **Stack:** Vite + TypeScript (strict), no UI framework, static output in `dist/`.
 - **Motion:** GSAP (ScrollTrigger, SplitText, ScrambleText, DrawSVG, Flip), OGL for the WebGL hero, and Lenis on desktop.
-- **Deploy:** Cloudflare Pages.
+- **Deploy:** a Docker image served by nginx (Hostinger VPS with EasyPanel), or Cloudflare Pages.
 
 The page works without JavaScript. Every changeable fact comes from `src/config.ts`.
 
@@ -50,7 +50,11 @@ scripts/report-sizes.mjs        gzip report + budget check (runs in npm run buil
 scripts/lighthouse.mjs          Lighthouse runner
 scripts/make-og.mjs             renders og.png
 scripts/make-grain.mjs          writes src/styles/grain.css (128px 2-bit noise PNG as a data URI)
-tests/*.spec.ts                 Playwright (tests/brand.spec.ts fails the build on design-system drift)
+scripts/headers-to-nginx.mjs    turns dist/_headers into nginx add_header lines (used by the Dockerfile)
+Dockerfile  nginx.conf          build the site and serve it with nginx (EasyPanel / any Docker host)
+.dockerignore
+tests/*.spec.ts                 Playwright (tests/brand.spec.ts fails the build on design-system drift;
+                                tests/socials.spec.ts checks empty social handles leave no dead UI)
 ```
 
 ---
@@ -65,8 +69,8 @@ Change the file, then rebuild. The build writes the values into the HTML, so lin
 | `headlineVariant` | `"A"`: *Stop launching into silence.* `"B"`: *Every announcement, animated in 48 hours.* A personalised link (`?c=`) always wins. |
 | `cal.link` / `cal.url` | Cal.com event (`user/event`) for the inline embed, and the full URL for the "Open it in your browser" fallback. |
 | `tally.remakeFormUrl` / `clipFormUrl` | Your two Tally forms. Every Tally button opens these in a new tab with `c`, `t` and `utm_*` appended. |
-| `social.*` | `xUrl` and `xHandle` power the DM line and the handles box. `xDmUrl` (optional) is a direct DM link; if empty, the profile URL is used. Telegram and LinkedIn only appear when set. |
-| `email` | Footer email with a copy button. |
+| `social.*` | All optional, and empty by default. With no X account, the "Prefer DMs? Message @handle on X" line, the `twitter:site` tag and the X link in the footer all disappear. `xUrl` and `xHandle` (both needed) power the DM line and the handles box; `xDmUrl` is a direct DM link, and if empty the profile URL is used. Telegram and LinkedIn only appear when set. The footer box always lists the site itself. |
+| `email` | Footer email with a copy button. It must be a mailbox you actually receive: create `hello@cipherframe.studio` (or change this value) before launch. |
 | `event` | Strip text. `start: "YYYY-MM-DD"` is read as midnight UTC; a full ISO time such as `"2026-11-15T09:00:00Z"` is used as-is. Once the date passes, the strip switches to the slots-only message. The countdown never resets. |
 | `deskSlotsLeft` | Must stay true. `0` hides the strip. |
 | `foundingSlotsLeft` | Must stay true. `0` hides the founding block. Pips fill for taken slots (3 total). |
@@ -94,7 +98,29 @@ videos: { hero: "", mainnet: "/videos/mainnet.mp4", lending: "/videos/lending.mp
 
 Inline videos autoplay muted only while visible. Under reduced motion they are click-to-play with controls. Videos on another domain are added to the CSP automatically at build.
 
-## 4. Deploying to Cloudflare Pages
+## 4. Deploying
+
+### A. Hostinger VPS with EasyPanel (Docker)
+
+EasyPanel pulls this repo from GitHub, builds the `Dockerfile` and serves the result with nginx. Nothing is uploaded by hand.
+
+1. In `src/config.ts`, set `domain` (currently `https://cipherframe.studio`), the Cal.com link, both Tally URLs and your name. Commit and push to `main`: the values are built into the page.
+2. EasyPanel → your project → **+ Service → App**.
+3. **Source → GitHub**: owner `anasmansouridev`, repo `cipherframe`, branch `main`. For a private repo, add the key EasyPanel shows under the repo's **Settings → Deploy keys** (read-only).
+4. **Build → Dockerfile** (path `Dockerfile`).
+5. **Domains & Proxy**: add your domain and set the port to **80**.
+6. **Deploy**. The first build takes a couple of minutes.
+7. DNS: add an **A record** for `@` (and `www`) pointing at the VPS IP. If you use Cloudflare, keep the cloud grey ("DNS only") until the certificate is issued. EasyPanel's proxy issues the free HTTPS certificate automatically.
+8. To update later: push to GitHub, then press **Deploy** again.
+
+What the image does:
+- The build stage runs `npm run build` (typecheck, build, size budgets) and turns `dist/_headers` into nginx headers with `scripts/headers-to-nginx.mjs`. The CSP script hash is read from the real build, so the two can never drift. The build fails if the CSP or its hash is missing.
+- nginx serves `dist/` with those headers, gzip, a one-year immutable cache for `/assets/`, and revalidation for the page itself. `_headers`, dotfiles and unknown paths return 404.
+- `www.<domain>` redirects to `<domain>` (only matters if you add the `www` domain in EasyPanel too).
+
+Test it locally (needs Docker): `docker build -t cipherframe . && docker run --rm -p 8080:80 cipherframe`, then open http://localhost:8080.
+
+### B. Cloudflare Pages
 
 1. Pages → Create project → connect this repo.
 2. **Root directory:** leave empty (the site is the repo root). **Build command:** `npm run build`. **Build output directory:** `dist`.
@@ -106,14 +132,16 @@ Inline videos autoplay muted only while visible. Under reduced motion they are c
 - `nosniff`, `strict-origin-when-cross-origin`, a locked-down `Permissions-Policy`, `X-Frame-Options`, HSTS;
 - immutable caching for `/assets/*`.
 
+Cloudflare Pages reads `_headers` directly; the Docker image reads the same file, so there is one source of truth.
+
 ## 5. DM link formats
 
 | DM | Link |
 |---|---|
-| Remake teaser (X DM 1) | `https://cipherframe.com/?c={Project}&t={mainnet\|listing\|partnership\|upgrade\|launch\|raise}&utm_source=x&utm_medium=dm&utm_campaign=dm1#difference` |
-| Funding (X DM 2) | `https://cipherframe.com/?c={Project}&t=raise&utm_source=x&utm_medium=dm&utm_campaign=dm2#desk` |
-| Launch coming (X DM 3) | `https://cipherframe.com/?c={Project}&t=launch&utm_source=x&utm_medium=dm&utm_campaign=dm3#pricing` |
-| LinkedIn | `https://cipherframe.com/?c={Company}&utm_source=linkedin&utm_medium=dm&utm_campaign=seqA#difference` |
+| Remake teaser (X DM 1) | `https://cipherframe.studio/?c={Project}&t={mainnet\|listing\|partnership\|upgrade\|launch\|raise}&utm_source=x&utm_medium=dm&utm_campaign=dm1#difference` |
+| Funding (X DM 2) | `https://cipherframe.studio/?c={Project}&t=raise&utm_source=x&utm_medium=dm&utm_campaign=dm2#desk` |
+| Launch coming (X DM 3) | `https://cipherframe.studio/?c={Project}&t=launch&utm_source=x&utm_medium=dm&utm_campaign=dm3#pricing` |
+| LinkedIn | `https://cipherframe.studio/?c={Company}&utm_source=linkedin&utm_medium=dm&utm_campaign=seqA#difference` |
 
 Rules the page applies:
 - **`c`:** letters, digits, spaces and `& . - '`, at most 40 characters, URL-encoded (`Arclight%20Labs`). Anything else means the whole value is ignored and the default copy shows.
@@ -129,7 +157,8 @@ Cal.com receives the same values: `forwardQueryParams` is on, and they're also p
 
 ## 6. Manual checklist (tick before launch)
 
-- [ ] Fill in `src/config.ts`: Cal.com link, both Tally URLs, X / Telegram / LinkedIn handles, founder name (and a real photo or none), event, slot counts.
+- [ ] Fill in `src/config.ts`: `domain`, Cal.com link, both Tally URLs, founder name (and a real photo or none), event, slot counts. X / Telegram / LinkedIn are optional.
+- [ ] Create the mailbox in `email` (default `hello@cipherframe.studio`) or change it, so enquiries reach you.
 - [ ] Test inside the **X app** on iOS and on Android.
 - [ ] Test inside the **LinkedIn app** on iOS and on Android.
 - [ ] Book a test call through the inline calendar, and once through the "Open it in your browser" link.
@@ -138,7 +167,7 @@ Cal.com receives the same values: `forwardQueryParams` is on, and they're also p
 - [ ] Check the DM button opens X (DM link if `xDmUrl` is set).
 - [ ] On a low-end Android, open the console and check `document.documentElement.dataset.tier` (expect `B` or `C`, with smooth scrolling).
 - [ ] Check the strip's slot count and the founding count are true today.
-- [ ] Open DevTools on the live domain: no CSP violations from Cal.com.
+- [ ] Open DevTools on the live domain: no CSP violations from Cal.com (the CSP has been checked against the nginx image with no violations from our own code, but Cal.com's own embed could not be exercised offline).
 
 ## 7. Design system
 
@@ -245,9 +274,9 @@ Events:
 
 Run on 2026-10-22, against the production build (`vite preview`).
 
-### Playwright: 163 passed, 0 failed
+### Playwright: 175 passed, 0 failed
 
-That is the original 136, plus 27 runs of the 8 design-system checks in `tests/brand.spec.ts`. Chromium at all six viewports. A dash (–) means the test is scoped to other viewports on purpose: 360×640-only above-the-fold checks, mobile-only toggle and sticky bar, desktop-only slider, and build checks that run once. 71 runs are skipped that way.
+That is the original 136, plus 27 runs of the 8 design-system checks in `tests/brand.spec.ts`, plus 12 runs of the 2 checks in `tests/socials.spec.ts`. Chromium at all six viewports. A dash (–) means the test is scoped to other viewports on purpose: 360×640-only above-the-fold checks, mobile-only toggle and sticky bar, desktop-only slider, and build checks that run once. 71 runs are skipped that way.
 
 | Test | 360×640 | 390×844 | 414×896 | 768×1024 | 1280×800 | 1440×900 |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -289,6 +318,8 @@ That is the original 136, plus 27 runs of the 8 design-system checks in `tests/b
 | Brand 5 · No `perspective`, `preserve-3d` or rotateX/Y, including while hovering cards | – | ✓ | – | – | – | ✓ |
 | Brand 6 · No old token names in `dist/`, `src/`, `scripts/`, `tests/`, `index.html` | – | – | – | – | ✓ | – |
 | Brand 7 · Ghost border is steel `rgb(163, 175, 198)`, turns ice on hover | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Socials · Empty handles leave no DM line, no empty links, no empty `twitter:site`; the footer box lists only what is set | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Socials · The footer email is on the site's own domain | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Brand 8 · Contrast measured in the browser: text pairs and pill labels on washes ≥ 4.5:1; ghost border and blue focus ring ≥ 3:1 | – | ✓ | – | – | – | ✓ |
 
 ### Lighthouse mobile (simulated throttling, median of 3)
@@ -324,7 +355,7 @@ Lazy chunks:
 
 - **WebKit / Safari.** This environment ships Chromium only, and the brief said not to run `playwright install` here. `playwright.config.ts` adds the six WebKit projects automatically wherever WebKit is installed: run `npx playwright install webkit && npm test`.
 - **The live Cal.com embed and Tally submissions.** Tests block all third-party network calls. They check the loader, the `forwardQueryParams` flag, the queued inline config and the fallback link, but not a real booking. See §6.
-- **The CSP in a browser.** Cloudflare `_headers` only apply on Pages, not in `vite preview`. The tests check the header file and the script hash.
+- **The CSP in a browser: now verified for our own code.** The Docker image was built and run, and the live container loaded in Chromium (Tier A, Tier B, phone, Tier C) with the real headers: 0 CSP violations. Third parties (Cal.com's iframe, Tally) are unreachable offline, so the live Cal.com embed still needs the manual check in §6. (This sandbox's proxy certificate had to be injected into a throwaway copy of the build; on a normal VPS the Dockerfile builds as-is.)
 - **Tier A in Lighthouse.** The 4-core build container makes the page choose Tier B (Canvas 2D), so the Lighthouse scores above are for Tier B. With Tier A forced and real 4× CPU throttling in Chromium, main-thread blocking after load was about 0.4 s on a phone profile. That figure is pessimistic because the GPU here is software (SwiftShader), but check a real high-end phone with Lighthouse or WebPageTest after deploy.
 - **Real devices and in-app browsers** (X, LinkedIn) are in the manual checklist.
 
@@ -384,3 +415,11 @@ Brought onto the Cipherframe design system; behaviour, layout, copy (except the 
 33. **Nudge** uses panel at 94% rather than the 55% glass recipe, because it floats over arbitrary content and must stay legible.
 34. **The "before" post** keeps its deliberately generic, off-brand flat colours, because it depicts the JPEG you'd post without Cipherframe.
 35. **Flagged: particles forming the mark.** In the hero scroll-out and the final CTA, particles converge into the Cipherframe mark. The logo rules say "never add effects to the logo", but the brand brief didn't list this for removal and froze behaviour, so I kept it. Remove the convergence if you read the rule strictly.
+
+### Going live on Hostinger (23 Oct 2026)
+
+36. **Domain** is `https://cipherframe.studio`. The tests read it from `src/config.ts` instead of hard-coding it.
+37. **Email** changed from `hello@cipherframe.com` (a domain that is not yours) to `hello@cipherframe.studio`. You need to create that mailbox, or set another address, before launch.
+38. **Social accounts** are empty for now. The page hides everything that depends on them: the "Prefer DMs? Message @handle on X" line, the `twitter:site` tag and the X link in the footer. The footer box then lists just the site. Fill the handles in later and rebuild; the page picks them up.
+39. **Docker, not static upload.** A Hostinger VPS runs EasyPanel, which deploys containers, so the repo has a `Dockerfile` and `nginx.conf`. The security headers were Cloudflare-only (`_headers`), so the image converts that same file into nginx headers at build.
+40. **Not changed:** the Cal.com link, Tally URLs, founder name, event strip (`Solana Breakpoint`, 15–17 Nov, London) and slot counts (4 Desk, 3 founding) are still the defaults. They need your real values before you send any DMs.
