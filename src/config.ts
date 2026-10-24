@@ -14,7 +14,7 @@ export const CONFIG = {
   domain: "https://cipherframe.studio",
   headlineVariant: "A" as "A" | "B",
   cal: { link: "anas-mansouri-bcw6cz/15min", url: "https://cal.com/anas-mansouri-bcw6cz/15min" },
-  tally: { remakeFormUrl: "https://tally.so/r/REMAKE", clipFormUrl: "https://tally.so/r/CLIP" },
+  tally: { remakeFormUrl: "https://tally.so/r/labkxk", clipFormUrl: "https://tally.so/r/Dq4jXp" },
   social: {
     xUrl: "https://x.com/Cipherframehq",
     xHandle: "@Cipherframehq",
