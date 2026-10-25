@@ -4,7 +4,10 @@
   position: relative;
   isolation: isolate;
   margin-top: -52px;
-  padding: calc(52px + 8px) 0 clamp(72px, 9vw, 112px);
+  padding: calc(52px + 24px) 0 clamp(72px, 9vw, 112px);
+  /* Air under the logo grows with the screen: 28px on most phones, down to 10px at 640px tall,
+     where the offer + risk line must still fit above the fold. */
+  padding-top: calc(52px + clamp(10px, calc(100svh - 630px), 28px));
 }
 .hero__grid {
   display: grid;
@@ -13,7 +16,7 @@
 @media (min-width: 768px) {
   .hero {
     margin-top: -72px;
-    padding-top: calc(72px + 24px);
+    padding-top: calc(72px + 32px);
   }
 }
 @media (min-width: 1024px) {
