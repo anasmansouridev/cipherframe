@@ -1042,6 +1042,176 @@
   max-width: 100%;
 }
 
+/* ---- Work films (CONFIG.work) ---- */
+.wvideos {
+  display: grid;
+  gap: var(--space-8);
+}
+@media (min-width: 768px) {
+  .wvideos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1100px) {
+  .wvideos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.wv {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.wv__media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--midnight);
+  border-bottom: 1px solid var(--grid-line);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+.wv__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--midnight);
+}
+/* The whole film is one button: tap to play or pause (keyboard and screen readers get it too). */
+.wv__toggle {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.wv__toggle:focus-visible,
+.wv__sound:focus-visible {
+  outline-offset: -4px;
+}
+.wv__play {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--steel);
+  background: rgba(10, 15, 30, 0.82);
+  color: var(--ice);
+  opacity: 1;
+  transition: opacity 0.2s var(--ease);
+}
+.wv__play .icon {
+  width: 28px;
+  height: 28px;
+  margin-left: 3px; /* optical centring of the triangle */
+}
+.wv.is-playing .wv__play {
+  opacity: 0;
+}
+.wv__toggle:hover .wv__play {
+  border-color: var(--ice);
+}
+.wv__sound {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--steel);
+  background: rgba(10, 15, 30, 0.82);
+  color: var(--ice);
+  transition: border-color 0.2s var(--ease);
+}
+.wv__sound:hover {
+  border-color: var(--ice);
+}
+.wv__sound.is-on {
+  border-color: var(--signal-mint);
+  color: var(--signal-mint);
+}
+.wv__sound .icon {
+  width: 20px;
+  height: 20px;
+}
+.wv__ico--on,
+.wv__sound.is-on .wv__ico--off {
+  display: none;
+}
+.wv__sound.is-on .wv__ico--on {
+  display: block;
+}
+.wv__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-6);
+}
+.wv__body .tag--dashed {
+  height: auto;
+  min-height: 24px;
+  padding-block: 4px;
+  line-height: 1.15;
+  white-space: normal;
+}
+.wv__meta {
+  font-size: var(--fs-label);
+  letter-spacing: 0.04em;
+  color: var(--steel);
+}
+.wv__line {
+  color: var(--steel);
+}
+.wv__x {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  color: var(--signal-mint);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+/* Studio concepts: the three fictional pieces, about 70% size on desktop, a swipe row on mobile */
+.concepts {
+  margin-top: var(--space-16);
+}
+.concepts__title {
+  margin-bottom: var(--space-4);
+}
+@media (min-width: 900px) {
+  .concepts {
+    max-width: 70%;
+    margin-inline: auto;
+  }
+}
+@media (max-width: 899.98px) {
+  .concepts .works {
+    display: flex;
+    gap: var(--space-4);
+    margin-inline: calc(-1 * var(--gutter));
+    padding: 2px var(--gutter) var(--space-2);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .concepts .works::-webkit-scrollbar {
+    display: none;
+  }
+  .concepts .work {
+    flex: 0 0 min(80%, 340px);
+    scroll-snap-align: start;
+  }
+}
+
 .wm--mainnet {
   display: flex;
   flex-direction: column;

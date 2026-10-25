@@ -10,6 +10,7 @@ import { startCountdown } from "./components/countdown";
 import { CTA_KEY, initNudge } from "./components/nudge";
 import { initSticky } from "./components/sticky-cta";
 import { initTimeline, unpinTimeline } from "./components/timeline";
+import { initWorkVideos } from "./components/work-videos";
 import { initCal } from "./integrations/cal";
 import { initTally } from "./integrations/tally";
 import type { HeroController } from "./motion/field";
@@ -50,6 +51,7 @@ function boot(): void {
     initBeforeAfter();
     initInlineVideos();
     initWorkPreviews();
+    initWorkVideos();
   }, 600);
   idle(() => {
     initNudge();

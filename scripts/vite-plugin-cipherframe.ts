@@ -16,6 +16,7 @@ import { build, type Plugin, type ResolvedConfig } from "vite";
 import { CONFIG } from "../src/config.ts";
 import { icon, mark } from "../src/icons.ts";
 import { finalHeadline, heroHeadline } from "../src/personalize.ts";
+import { workTag } from "../src/work.ts";
 
 /**
  * Official brand files (PART 3 of the brand pass): when public/brand/ holds them, they are
@@ -218,6 +219,38 @@ function twitterSiteBlock(): string {
   return CONFIG.social.xHandle ? `<meta name="twitter:site" content="${esc(CONFIG.social.xHandle)}" />` : "";
 }
 
+/**
+ * The Work films (CONFIG.work). One card each: 1:1 poster/video, tag, title, meta, line, "View on X".
+ * Videos are preload="none", so nothing downloads until src/components/work-videos.ts plays one.
+ * Exported so tests can render it with a different `permission` value.
+ */
+export function workVideosBlock(): string {
+  if (!CONFIG.work.length) return "";
+  const cards = CONFIG.work
+    .map((w) => {
+      const tag = workTag(w.permission);
+      const sources = [w.webm ? `<source src="${esc(w.webm)}" type="video/webm">` : "", `<source src="${esc(w.video)}" type="video/mp4">`].join("");
+      return `<article class="wv glass" data-wv data-slug="${esc(w.slug)}" data-permission="${w.permission}">
+            <div class="wv__media">
+              <video class="wv__video" data-wv-video muted loop playsinline preload="none" poster="${esc(w.poster)}" width="720" height="720" aria-label="${esc(w.title)}: 5-second animated film">${sources}</video>
+              <button class="wv__toggle" type="button" data-wv-toggle aria-label="Play video: ${esc(w.title)}"><span class="wv__play" aria-hidden="true">${icon("play")}</span></button>
+              <button class="wv__sound" type="button" data-wv-sound aria-label="Turn sound on">${icon("mute", "icon wv__ico wv__ico--off")}${icon("sound", "icon wv__ico wv__ico--on")}</button>
+            </div>
+            <div class="wv__body">
+              <span class="${tag.cls}">${esc(tag.text)}</span>
+              <h3 class="wv__title">${esc(w.title)}</h3>
+              <p class="mono wv__meta">${esc(w.meta)}</p>
+              <p class="wv__line">${esc(w.line)}</p>
+              <a class="wv__x" href="${esc(w.xUrl)}" target="_blank" rel="noopener" data-work-x="${esc(w.slug)}">View on X <span aria-hidden="true">↗</span><span class="sr-only"> for ${esc(w.title)} (${esc(w.handle)})</span></a>
+            </div>
+          </article>`;
+    })
+    .join("\n          ");
+  return `<div class="wvideos" data-wvideos>
+          ${cards}
+        </div>`;
+}
+
 /** A rendered hero loop (CONFIG.videos.hero) replaces the code-generated transaction field. */
 function heroVideoBlock(): string {
   if (!CONFIG.videos.hero) return "";
@@ -305,6 +338,7 @@ function renderBlocks(html: string): string {
     mainnetMedia: mainnetMediaBlock,
     heroVideo: heroVideoBlock,
     dmLine: dmLineBlock,
+    workVideos: workVideosBlock,
     twitterSite: twitterSiteBlock,
     play: (key, ...title) => playButton(key as keyof typeof CONFIG.videos, title.join(":")),
   };
@@ -390,6 +424,7 @@ export function cipherframe(): Plugin {
         " __EXTRA_MEDIA__": extraMedia.length ? ` ${uniq(extraMedia)}` : "",
         " __EXTRA_IMG__": extraImg.length ? ` ${uniq(extraImg)}` : "",
       });
+      fs.rmSync(path.join(dir, "work/raw"), { recursive: true, force: true }); // originals are kept in git, never shipped
       replace("robots.txt", { __DOMAIN__: domain });
       replace("llms.txt", { __DOMAIN__: domain });
       replace("sitemap.xml", { __DOMAIN__: domain, __LASTMOD__: new Date().toISOString().slice(0, 10) });

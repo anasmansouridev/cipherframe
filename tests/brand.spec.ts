@@ -42,7 +42,8 @@ test("brand 2 · radii: glass card 14px, button 10px; buttons 48px tall (56px fo
   expect(await height("#guarantee .btn--primary")).toBe(48);
   expect(await height(".price .btn")).toBe(48);
   expect(await page.locator(".pill").first().evaluate((el) => Math.round(el.getBoundingClientRect().height))).toBe(28);
-  expect(await page.locator(".tag").first().evaluate((el) => Math.round(el.getBoundingClientRect().height))).toBe(24);
+  // .work .tag is the one-line CONCEPT tag; the long dashed tag on the film cards may wrap on narrow phones.
+  expect(await page.locator(".work .tag").first().evaluate((el) => Math.round(el.getBoundingClientRect().height))).toBe(24);
 });
 
 test("brand 3 · no element has a box-shadow", async ({ page }, info) => {

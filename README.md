@@ -34,7 +34,7 @@ src/personalize.ts              ?c / ?t sanitising and headline copy
 src/utm.ts                      first-touch UTMs (sessionStorage) and URL decoration
 src/analytics.ts                track(), Cloudflare beacon, scroll depth, pricing_view
 src/icons.ts                    Lucide-style icons and the logo mark (rendered at build)
-src/components/                 before-after, timeline, compare, sticky-cta, nudge, countdown, dialog (lazy)
+src/components/                 before-after, timeline, compare, sticky-cta, nudge, countdown, work-videos, dialog (lazy)
 src/integrations/               cal.ts (lazy Cal.com inline embed), tally.ts
 src/motion/hero-webgl.ts        Tier A particle field (lazy, OGL)
 src/motion/hero-canvas.ts       Tier B particle field (lazy, Canvas 2D)
@@ -45,11 +45,13 @@ src/styles/                     tokens.css (design-system tokens) base.css glass
                                 grain.css (generated noise tile; lazy, Tier A only)
 public/                         favicon.svg og.png (1200×630) _headers robots.txt sitemap.xml llms.txt
 public/brand/ (optional)        official logo and icon SVGs; inlined at build when present (§7)
+public/work/                    the Work films: <slug>.mp4 .webm -poster.webp; raw/ holds the originals (never shipped)
 scripts/vite-plugin-cipherframe.ts   build-time templating, JSON-LD, CSP hash, domain placeholders
 scripts/report-sizes.mjs        gzip report + budget check (runs in npm run build)
 scripts/lighthouse.mjs          Lighthouse runner
 scripts/make-og.mjs             renders og.png
 scripts/make-grain.mjs          writes src/styles/grain.css (128px 2-bit noise PNG as a data URI)
+scripts/make-work-videos.mjs    npm run work: encodes public/work/raw/<slug>.mp4 into the web files (needs ffmpeg)
 scripts/headers-to-nginx.mjs    turns dist/_headers into nginx add_header lines (used by the Dockerfile)
 Dockerfile  nginx.conf          build the site and serve it with nginx (EasyPanel / any Docker host)
 .dockerignore
@@ -78,14 +80,32 @@ Change the file, then rebuild. The build writes the values into the HTML, so lin
 | `freeRemakesPerDay` | Used everywhere the page says "3 a day". |
 | `remakes[]` | "From our daily remake series" row; it renders only when there are entries. Each card is labelled **UNOFFICIAL CONCEPT · NOT AFFILIATED** and links to the X post. Use a 16:9 WebP/AVIF `poster`. |
 | `testimonials[]`, `clientLogos[]` | Rendered **only** for entries with `permissionConfirmed: true`. The testimonial strip appears after `#work` and the logo row under the hero proof row. With no confirmed entries, those blocks are not in the DOM at all. |
-| `videos.*` | See §3. |
+| `videos.*` | Hero loop and the three studio-concept videos. See §3. |
+| `work[]` | The Work films shown before the studio concepts: one card per entry, in order. See "Adding a film" in §3. `permission: false` shows the dashed "UNOFFICIAL CONCEPT · NOT AFFILIATED" tag; set `true` only with the brand's OK ("SHARED WITH PERMISSION"). |
 | `founder` | `name` (replace `[Your name]`). `photo` must be a real photo of you; if empty, the logo mark shows. `note` overrides the default note; separate paragraphs with a blank line. |
 | `analytics.cfBeaconToken` | Turns on Cloudflare Web Analytics (no cookies). |
 | `analytics.eventEndpoint` | URL that receives custom events (see §9). Empty means events only log in dev. |
 
 The build also keeps `dist/_headers` in sync with the config: it adds the origins of any video, image or event endpoint you configure to the CSP.
 
-## 3. Swapping in rendered videos
+## 3. Videos
+
+### Adding a film to the Work section
+
+1. Drop the original (any size, ideally square) in `public/work/raw/<slug>.mp4`.
+2. `npm run work` (or `npm run work -- <slug>`; needs ffmpeg on PATH, or `FFMPEG=/path/to/ffmpeg`). It writes `public/work/<slug>.mp4` (H.264, 720×720, 30 fps, CRF 26, AAC 128k, faststart), `<slug>.webm` (VP9 + Opus, dropped if much larger than the MP4) and `<slug>-poster.webp` (720×720 from the frame at 4.6 s; override with `POSTER_AT=3.2`).
+3. Add an entry to `work` in `src/config.ts` (slug, title, X handle and URL, meta line, one-line description, the file paths, `permission`). Commit and deploy.
+
+How the cards behave:
+- **No download until played.** Videos are `preload="none"`; the posters stand in, so the first paint is unchanged. The page loads about 16 KB of posters.
+- **Autoplay at 50% visible, muted, one at a time.** The first card in reading order that is on screen plays and keeps playing until it leaves; leaving pauses it. Scrolling away forgets a manual pause.
+- **Tap the film** to pause or play (it is a real button, so keyboard and screen readers work). **The round speaker button** unmutes that film only and restarts it from 0 so the sound lines up; any other film is muted and paused.
+- **Tap-only mode:** with reduced motion, Save-Data, 2G/3G, or when the FPS probe drops the page to Tier C, nothing autoplays; each poster shows a play button.
+- **Layout:** 3 columns on desktop, 2 + 1 on tablet, 1 column on phones. The studio concepts sit below at about 70% width, as a swipe row on phones.
+- **Analytics:** `work_video_play` (once per film per visit), `work_video_sound_on`, `work_x_click`, each with `{ slug }`.
+- **Raw originals** are committed but removed from `dist/` by the build. The Docker/nginx image caches `/work/` for a day.
+
+### Swapping in rendered videos for the hero and the studio concepts
 
 Put MP4s (H.264, muted-friendly) in `public/videos/` or on a CDN, and set the URLs:
 
@@ -241,7 +261,7 @@ An FPS probe runs for 1s after the hero mounts. Below 45fps the page drops one t
 **Personalisation before first paint:** `src/early.ts` is inlined in `<head>` and applies the chip, H1 and strip as the parser produces them. A DM visitor never sees the default headline flash, and CLS is 0.
 
 **Load order:**
-- Initial JS (~11 KB gzip) holds the DOM features.
+- Initial JS (~13 KB gzip) holds the DOM features.
 - After `load` and an idle callback come the decode chunk, then the hero renderer, then the FPS probe, then the section motion chunk.
 - Each section's motion starts when it nears the viewport, in idle time.
 - Cal.com loads within 600px of `#book`.
@@ -275,7 +295,7 @@ Events:
 
 Run on 2026-10-22, against the production build (`vite preview`).
 
-### Playwright: 182 passed, 0 failed
+### Playwright: 228 passed, 0 failed
 
 That is the original 136, plus 27 runs of the 8 design-system checks in `tests/brand.spec.ts`, plus 12 runs of the 2 checks in `tests/socials.spec.ts`. Chromium at all six viewports. A dash (–) means the test is scoped to other viewports on purpose: 360×640-only above-the-fold checks, mobile-only toggle and sticky bar, desktop-only slider, and build checks that run once. 71 runs are skipped that way.
 
@@ -321,21 +341,30 @@ That is the original 136, plus 27 runs of the 8 design-system checks in `tests/b
 | Brand 7 · Ghost border is steel `rgb(163, 175, 198)`, turns ice on hover | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Socials · Empty handles leave no DM line, no empty links, no empty `twitter:site`; the footer box lists only what is set | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Socials · The footer email is on the site's own domain | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Work (a) · No `<video>` requests a file on page load; all are unloaded | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Work (b) · Scrolling to the films autoplays the first one, muted; only one plays; the others stay unloaded; `work_video_play` fires | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Work (b2) · Tapping the film pauses and resumes it, and the button label follows | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Work (c) · The speaker button (≥44×44) unmutes only that film; the previous one is re-muted and paused | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Work (d) · Reduced motion: nothing autoplays or loads, a play button shows, tap plays muted | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Work (e) · Each card shows the tag for its `permission` value (also rendered with `true`); the word "client" never appears | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Work (f) · No horizontal scroll at 360px; the concepts swipe row is contained | ✓ | – | – | – | – | – |
+| Work · "View on X" links open the right account in a new tab and are tracked | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Work · Files exist, each video under 2.5 MB, posters are WebP, raw originals not shipped, WebM listed before MP4 | – | – | – | – | ✓ | – |
 | Brand 8 · Contrast measured in the browser: text pairs and pill labels on washes ≥ 4.5:1; ghost border and blue focus ring ≥ 3:1 | – | ✓ | – | – | – | ✓ |
 
 ### Lighthouse mobile (simulated throttling, median of 3)
 
 | URL | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|
-| `/` | 99 | 100 | 100 | 100 | 1.8 s | 0 | 20 ms |
-| `/?c=Arclight&t=mainnet&utm_…` | 99 | 100 | 100 | 100 | 1.7 s | 0 | 10 ms |
+| `/` | 99 | 100 | 100 | 100 | 1.8 s | 0 | 0 ms |
+| `/?c=Arclight&t=mainnet&utm_…` | 99 | 100 | 100 | 100 | 1.8 s | 0 | 0 ms |
 
 ### Bundle sizes (gzip -9)
 
 | | Size | Budget |
 |---|---|---|
-| **Initial JS** (`index-*.js` + inlined boot script) | **11.4 KB** (9.1 + 2.3) | ≤ 90 KB |
-| **CSS** (render-blocking 10.3 KB + lazy Tier A grain 4.3 KB) | **14.6 KB** | ≤ 35 KB |
+| **Initial JS** (`index-*.js` + inlined boot script) | **12.7 KB** (10.1 + 2.6) | ≤ 90 KB |
+| **CSS** (render-blocking 10.6 KB + lazy Tier A grain 4.3 KB) | **14.9 KB** | ≤ 35 KB |
 | **Fonts** (5 woff2, latin; only Space Grotesk 600 preloaded) | **105.0 KB** | ≤ 120 KB |
 | HTML | 15.2 KB | — |
 
@@ -351,6 +380,14 @@ Lazy chunks:
 | `hero-canvas` | 1.2 KB |
 | `field` | 1.1 KB |
 | `dialog` | 0.6 KB |
+
+Work films (served from `/work/`, not part of the JS/CSS budgets; each under the 2.5 MB target):
+
+| Film | MP4 | WebM | Poster | Original |
+|---|---|---|---|---|
+| spout | 197 KB | 196 KB | 7 KB | 3.7 MB |
+| 0xbow | 172 KB | 180 KB | 3 KB | 0.5 MB |
+| archer | 216 KB | 146 KB | 6 KB | 1.4 MB |
 
 ### What I couldn't verify, and why
 
@@ -428,3 +465,13 @@ Brought onto the Cipherframe design system; behaviour, layout, copy (except the 
 42. **New price ladder (23 Oct 2026):** Clip $200, Feature Video $350, Unlimited Desk $1,490/month (prepay $3,990), Protocol Explainer $790, Launch Pack $1,290, 5 founding Desks at $990/month for 3 months. "Announcement Desk" is now "Unlimited Desk" everywhere visible. The founding total lives in `CONFIG.foundingTotal`. `tests/build.spec.ts` fails if an old price returns.
 43. **Cal.com and X filled in:** booking link `cal.com/anas-mansouri-bcw6cz/15min`, X account `@Cipherframehq` (the "Prefer DMs" line, the footer X link and `twitter:site` now appear). Tally links and slot counts are still placeholders. Testimonials and client logos stay hidden until real, permitted ones exist.
 44. **Tally forms filled in:** free remake `tally.so/r/labkxk`, $200 clip `tally.so/r/Dq4jXp`. The hidden fields `c`, `t`, `utm_source`, `utm_medium` and `utm_campaign` must exist in both forms for DM attribution to show up. Only the slot counts remain placeholders.
+
+### Work films (25 Oct 2026)
+
+45. **Source order is WebM, then MP4.** The sizes are almost the same, but Playwright's Chromium cannot decode H.264, so the WebM is what the tests actually play. Real Chrome, Edge and Firefox use the WebM; Safari versions that cannot play it fall back to the MP4.
+46. **CRF 26 as specified.** I compared CRF 20 on the dark-blue Spout glow frame: visually identical, five times the size, so I kept 26.
+47. **Selection rule.** On desktop all three cards are visible at once; the first plays and keeps playing (no jumping). A manual pause is respected until the film scrolls away. Posters are fetched at load (about 16 KB in total); the videos are not.
+48. **Tests pin Tier B for the autoplay tests.** Under heavy parallel load the FPS probe can legitimately drop the page to Tier C (tap-only), so those tests fix the tier instead of racing it.
+49. **The long unofficial tag wraps on phones under about 390px** (it is 35 characters of mono at 0.72rem). It stays one line from 390px up. The brand test measures the one-line CONCEPT tag for the 24px height.
+50. **Concept cards use `h4`** under the new "Studio concepts" `h3`, so headings stay in order.
+51. **Flagged: the Spout film shows "0% APR" and a price chart.** The site's own rules say no returns, APY or charts in visuals, and the FAQ says "we never write price or return claims". It is an unofficial concept for a real company, so check you are comfortable with that line before you share the page widely.

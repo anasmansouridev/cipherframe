@@ -31,6 +31,7 @@ body {
 h1,
 h2,
 h3,
+h4,
 p,
 ul,
 ol,
@@ -192,7 +193,8 @@ p {
   text-wrap: balance;
 }
 
-h3 {
+h3,
+h4 {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--fs-h3);

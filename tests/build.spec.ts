@@ -47,6 +47,27 @@ test("prices: no old price survives in the built HTML, and every new price is pr
   expect(desk.priceSpecification.billingDuration).toBe("P1M");
 });
 
+test("work films: files exist and are small, posters are webp, and the raw originals are not shipped", () => {
+  const MAX = 2.5 * 1024 * 1024;
+  for (const w of CONFIG.work) {
+    for (const file of [w.video, w.webm, w.poster].filter(Boolean)) {
+      const p = path.join(dist, file.replace(/^\//, ""));
+      expect(fs.existsSync(p), file).toBe(true);
+      if (!file.endsWith(".webp")) expect(fs.statSync(p).size, `${file} must stay under 2.5 MB`).toBeLessThan(MAX);
+    }
+    // The poster is a real WebP at 720x720 (RIFF....WEBP, VP8 chunk)
+    const head = fs.readFileSync(path.join(dist, w.poster.replace(/^\//, "")));
+    expect(head.subarray(0, 4).toString()).toBe("RIFF");
+    expect(head.subarray(8, 12).toString()).toBe("WEBP");
+  }
+  expect(fs.existsSync(path.join(dist, "work", "raw"))).toBe(false);
+  const html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
+  expect(html).not.toContain("/work/raw/");
+  expect(html).toContain('preload="none"');
+  // WebM is listed before MP4 so browsers that can play it prefer the smaller file
+  for (const w of CONFIG.work) if (w.webm) expect(html.indexOf(`<source src="${w.webm}"`)).toBeLessThan(html.indexOf(`<source src="${w.video}"`));
+});
+
 test("CSP: the inline boot script's sha256 is in dist/_headers, and no third-party script hosts beyond Cal.com and Cloudflare", () => {
   const html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
   const headers = fs.readFileSync(path.join(dist, "_headers"), "utf8");

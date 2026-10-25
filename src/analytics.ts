@@ -16,7 +16,10 @@ export type EventName =
   | "nudge_click"
   | "nudge_dismiss"
   | "scroll_50"
-  | "scroll_90";
+  | "scroll_90"
+  | "work_video_play"
+  | "work_video_sound_on"
+  | "work_x_click";
 
 /** POSTs JSON with sendBeacon when an endpoint is configured; logs in dev otherwise. */
 export function track(name: EventName, props: Record<string, unknown> = {}): void {

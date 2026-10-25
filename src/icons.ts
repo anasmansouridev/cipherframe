@@ -3,7 +3,7 @@
  * and joins, stroke="currentColor". Rendered inline into the HTML at build time.
  * Design-system set: wallet, bridge, vault, hexagon, coins, link (chain link), key, lock,
  * zap (lightning), calendar, check. UI icons the page also needs: x, arrow (arrow-right), play,
- * copy, chevron (chevron-down). The build inlines public/brand/icons/<name>.svg instead when present
+ * copy, chevron (chevron-down), sound (speaker on), mute (speaker off). The build inlines public/brand/icons/<name>.svg instead when present
  * (see BRAND_FILES in scripts/vite-plugin-cipherframe.ts).
  */
 export const ICONS: Record<string, string> = {
@@ -26,6 +26,9 @@ export const ICONS: Record<string, string> = {
   play: '<path d="M6 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L7.5 3.64A1 1 0 0 0 6 4.5z"/>',
   arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
   chevron: '<path d="m6 9 6 6 6-6"/>',
+  sound:
+    '<path d="M11 4.7a.7.7 0 0 0-1.2-.5L6.4 7.6a1.4 1.4 0 0 1-1 .4H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.4a1.4 1.4 0 0 1 1 .4l3.4 3.4a.7.7 0 0 0 1.2-.5z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.4 18.4a9 9 0 0 0 0-12.8"/>',
+  mute: '<path d="M11 4.7a.7.7 0 0 0-1.2-.5L6.4 7.6a1.4 1.4 0 0 1-1 .4H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.4a1.4 1.4 0 0 1 1 .4l3.4 3.4a.7.7 0 0 0 1.2-.5z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/>',
 };
 
 export function icon(name: string, cls = "icon"): string {

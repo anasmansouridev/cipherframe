@@ -10,6 +10,8 @@
  * - testimonials and clientLogos only render with permissionConfirmed: true.
  * - remakes are labelled "UNOFFICIAL CONCEPT · NOT AFFILIATED" automatically.
  */
+import type { WorkItem } from "./work.ts";
+
 export const CONFIG = {
   domain: "https://cipherframe.studio",
   headlineVariant: "A" as "A" | "B",
@@ -35,6 +37,49 @@ export const CONFIG = {
   testimonials: [] as { quote: string; name: string; role: string; project: string; permissionConfirmed: boolean }[],
   clientLogos: [] as { name: string; src: string; permissionConfirmed: boolean }[],
   videos: { hero: "", mainnet: "", lending: "", payment: "" },
+  /**
+   * Films in the Work section, shown before the studio concepts. Files live in public/work/
+   * (npm run work encodes them from public/work/raw/). permission: false shows the dashed
+   * "UNOFFICIAL CONCEPT · NOT AFFILIATED" tag; set true only with the brand's written OK.
+   */
+  work: [
+    {
+      slug: "spout",
+      title: "Spout Finance · The Whale Vault",
+      handle: "@SpoutFi",
+      xUrl: "https://x.com/SpoutFi",
+      meta: "5s · 1:1 · original sound design",
+      line: "A whole product explained before the thumb moves. Built from their logo, frame by frame.",
+      video: "/work/spout.mp4",
+      webm: "/work/spout.webm",
+      poster: "/work/spout-poster.webp",
+      permission: false,
+    },
+    {
+      slug: "0xbow",
+      title: "0xbow · Into the Pool",
+      handle: "@0xbowio",
+      xUrl: "https://x.com/0xbowio",
+      meta: "5s · 1:1 · original sound design",
+      line: "A technical launch, turned into one calm, precise idea.",
+      video: "/work/0xbow.mp4",
+      webm: "/work/0xbow.webm",
+      poster: "/work/0xbow-poster.webp",
+      permission: false,
+    },
+    {
+      slug: "archer",
+      title: "Archer · One Book",
+      handle: "@ArcherExchange_",
+      xUrl: "https://x.com/ArcherExchange_",
+      meta: "5s · 1:1 · original sound design",
+      line: "A text-only launch, given the energy it deserved.",
+      video: "/work/archer.mp4",
+      webm: "/work/archer.webm",
+      poster: "/work/archer-poster.webp",
+      permission: false,
+    },
+  ] as WorkItem[],
   founder: { name: "Anas Mansouri", photo: "", note: "" }, // empty note = default text
   analytics: { cfBeaconToken: "", eventEndpoint: "" },
 };

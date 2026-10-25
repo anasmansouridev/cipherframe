@@ -11,5 +11,8 @@
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
+/work/*
+  Cache-Control: public, max-age=86400
+
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
