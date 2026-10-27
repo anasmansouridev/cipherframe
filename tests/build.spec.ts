@@ -129,7 +129,7 @@ test("SEO: title, description, canonical, OG/Twitter and JSON-LD (no ratings)", 
   expect(studio["@type"]).toBe("ProfessionalService");
   expect(studio.makesOffer.map((o: { price: string }) => o.price)).toEqual(["200", "350", "1490", "790", "1290"]);
   expect(faq["@type"]).toBe("FAQPage");
-  expect(faq.mainEntity).toHaveLength(13);
+  expect(faq.mainEntity).toHaveLength(11);
   expect(JSON.stringify(ld)).not.toMatch(/aggregateRating|ratingValue|review/i);
   const og = fs.statSync(path.join(dist, "og.png"));
   expect(og.size).toBeGreaterThan(1000);

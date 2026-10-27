@@ -7,18 +7,20 @@ export function eventStart(): number {
   return Number.isFinite(t) ? t : NaN;
 }
 
+/** The free-remake offer: the strip's default line, and the only one with a button. */
+export const giftText = (n: number) => `◆ Free gift: we'll animate your last announcement. Only ${n} a day.`;
+
 export function stripText(now: number = Date.now()): string | null {
   const slots = CFG.deskSlotsLeft;
-  if (!(slots > 0)) return null;
   const start = eventStart();
   const { name, dates, place } = CFG.event;
-  if (name && start > now) {
+  if (name && start > now && slots > 0) {
     const diff = start - now;
     const d = Math.floor(diff / 86_400_000);
     const h = Math.floor((diff % 86_400_000) / 3_600_000);
     return `◆ ${name} · ${dates} · ${place} — launch-week slots: ${slots} left · ${d}d ${h}h to go`;
   }
-  return `◆ ${slots} Desk slots open this month · ${CFG.freeRemakesPerDay} free remakes a day`;
+  return CFG.freeRemakesPerDay > 0 ? giftText(CFG.freeRemakesPerDay) : null;
 }
 
 export function renderStrip(now: number = Date.now()): void {
@@ -28,6 +30,8 @@ export function renderStrip(now: number = Date.now()): void {
   const value = stripText(now);
   strip.hidden = value === null;
   if (value !== null && text.textContent !== value) text.textContent = value;
+  const cta = strip.querySelector<HTMLElement>("[data-strip-cta]");
+  if (cta) cta.hidden = value !== giftText(CFG.freeRemakesPerDay);
 }
 
 /** Re-render every minute (the countdown shows days and hours) and when the tab comes back. */

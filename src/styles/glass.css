@@ -4,7 +4,7 @@
  * Text contrast on glass over midnight: ice 15.2:1, steel 7.9:1 (tests/contrast.spec.ts and
  * tests/brand.spec.ts measure it in the browser).
  *
- * Tier A: full blur. Tier B: cards are solid; only the sticky bar, the nudge and the
+ * Tier A: full blur. Tier B: cards are solid; only the sticky bar and the
  * before/after handle keep a blur (never more than 3 on screen). Tier C: solid, no blur.
  */
 .glass {

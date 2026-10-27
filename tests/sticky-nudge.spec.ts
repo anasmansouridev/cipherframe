@@ -17,38 +17,11 @@ test("5 · sticky bar: hidden over the hero, shown mid-page, hidden over #book",
   await expect(bar).toHaveAttribute("data-visible", "false");
 });
 
-test("5 · nudge appears once after 60% scroll and never again after dismissal", async ({ page }) => {
+test("5 · no pop-up: the free-remake offer lives in the top strip instead", async ({ page }) => {
   await hermetic(page);
   await page.goto("/");
-  const nudge = page.locator("[data-nudge]");
-  await scrollToDepth(page, 0.3);
-  await page.waitForTimeout(400);
-  await expect(nudge).toHaveCount(0);
-  await scrollToDepth(page, 0.62);
-  await expect(nudge).toBeVisible();
-  await expect(nudge).toContainText("Want your last announcement animated, free?");
-  await expect(page.locator("[data-nudge-region]")).toHaveAttribute("aria-live", "polite");
-  // Focus is never stolen
-  expect(await page.evaluate(() => document.activeElement === document.body || document.activeElement === null)).toBe(true);
-  await nudge.getByRole("button", { name: "No thanks" }).click();
-  await expect(nudge).toHaveCount(0);
-  await scrollToDepth(page, 0.7);
-  await page.waitForTimeout(500);
-  await expect(nudge).toHaveCount(0);
-
-  await page.reload();
   await scrollToDepth(page, 0.65);
-  await page.waitForTimeout(800);
-  await expect(nudge).toHaveCount(0);
-  const events = await page.evaluate(() => (window.cfEvents ?? []).map((e) => e.name));
-  expect(events).not.toContain("nudge_shown");
-});
-
-test("5 · nudge never shows after a CTA click in the session", async ({ page }) => {
-  await hermetic(page);
-  await page.goto("/");
-  await page.locator(".hero__ctas .btn--primary").click();
-  await scrollToDepth(page, 0.65);
-  await page.waitForTimeout(800);
-  await expect(page.locator("[data-nudge]")).toHaveCount(0);
+  await page.waitForTimeout(1200);
+  await expect(page.locator(".nudge, [data-nudge], [data-nudge-region]")).toHaveCount(0);
+  await expect(page.locator("#strip [data-strip-cta]")).toHaveCount(1);
 });

@@ -404,9 +404,27 @@ html.is-interacting .btn--primary::after {
   background: var(--panel);
   border-bottom: 1px solid var(--grid-line);
 }
+.strip__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 24px;
+  margin-left: var(--space-2);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--signal-mint);
+  color: #04140d;
+  font: 600 0.72rem / 1 var(--font-body);
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.strip__cta:hover {
+  filter: brightness(1.06);
+}
 .strip__text {
   max-width: none;
-  padding: 7px 0;
+  padding: 6px 0;
   font-size: 0.72rem;
   line-height: 1.5;
   letter-spacing: 0.02em;

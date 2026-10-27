@@ -96,11 +96,11 @@ function stripBlock(): string {
   const slots = CONFIG.deskSlotsLeft;
   const start = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(CONFIG.event.start) ? `${CONFIG.event.start}T00:00:00Z` : CONFIG.event.start);
   const { name, dates, place } = CONFIG.event;
-  const text =
-    name && start > Date.now()
-      ? `◆ ${name} · ${dates} · ${place} — launch-week slots: ${slots} left`
-      : `◆ ${slots} Desk slots open this month · ${CONFIG.freeRemakesPerDay} free remakes a day`;
-  return `<div id="strip" class="strip"${slots > 0 ? "" : " hidden"}><div class="container"><p class="strip__text mono" data-strip>${esc(text)}</p></div></div>`;
+  const event = Boolean(name && start > Date.now() && slots > 0);
+  const gift = CONFIG.freeRemakesPerDay > 0;
+  const text = event ? `◆ ${name} · ${dates} · ${place} — launch-week slots: ${slots} left` : `◆ Free gift: we'll animate your last announcement. Only ${CONFIG.freeRemakesPerDay} a day.`;
+  const cta = `<a class="strip__cta" href="${esc(CONFIG.tally.remakeFormUrl)}" target="_blank" rel="noopener" data-cta="remake" data-tally="remake" data-loc="strip" data-strip-cta${event ? " hidden" : ""}>Claim yours <span aria-hidden="true">→</span></a>`;
+  return `<div id="strip" class="strip"${event || gift ? "" : " hidden"}><div class="container"><p class="strip__text mono"><span data-strip>${esc(text)}</span>${cta}</p></div></div>`;
 }
 
 function handlesBlock(): string {

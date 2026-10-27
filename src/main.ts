@@ -8,7 +8,6 @@ import { initBeforeAfter, initInlineVideos } from "./components/before-after";
 import { initCompare } from "./components/compare";
 import { initConceptVideos } from "./components/concept-videos";
 import { startCountdown } from "./components/countdown";
-import { CTA_KEY, initNudge } from "./components/nudge";
 import { initSticky } from "./components/sticky-cta";
 import { initTimeline, unpinTimeline } from "./components/timeline";
 import { initWorkVideos } from "./components/work-videos";
@@ -17,7 +16,7 @@ import { initTally } from "./integrations/tally";
 import type { HeroController } from "./motion/field";
 import { registry } from "./motion/registry";
 import { applyPersonalization } from "./personalize";
-import { CFG, $, $$, afterLoad, idle, isMobileWidth, setSession } from "./runtime";
+import { CFG, $, $$, afterLoad, idle, isMobileWidth } from "./runtime";
 import { detectTier, forcedTier, getTier, hasWebGL2, lowerTier, measureFps, setTier, type Tier } from "./tier";
 import { captureFirstTouch } from "./utm";
 
@@ -55,7 +54,6 @@ function boot(): void {
     initWorkVideos();
   }, 600);
   idle(() => {
-    initNudge();
     initCal();
     initCopy();
     trackOnView(document.getElementById("pricing"), "pricing_view");
@@ -108,7 +106,6 @@ function initCtaTracking(): void {
     if (!el) return;
     const name = CTA_EVENTS[el.dataset.cta ?? ""];
     if (!name) return;
-    setSession(CTA_KEY, el.dataset.cta ?? "1");
     track(name, { loc: el.dataset.loc ?? "" });
   });
 }
