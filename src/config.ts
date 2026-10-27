@@ -36,7 +36,7 @@ export const CONFIG = {
   remakes: [] as { project: string; announcement: string; xPostUrl: string; poster: string }[],
   testimonials: [] as { quote: string; name: string; role: string; project: string; permissionConfirmed: boolean }[],
   clientLogos: [] as { name: string; src: string; permissionConfirmed: boolean }[],
-  videos: { hero: "", mainnet: "", lending: "", payment: "" },
+  videos: { hero: "", lending: "", payment: "" },
   /**
    * Films in the Work section, shown before the studio concepts. Files live in public/work/
    * (npm run work encodes them from public/work/raw/). permission: false shows the dashed

@@ -46,12 +46,14 @@ src/styles/                     tokens.css (design-system tokens) base.css glass
 public/                         favicon.svg og.png (1200×630) _headers robots.txt sitemap.xml llms.txt
 public/brand/ (optional)        official logo and icon SVGs; inlined at build when present (§7)
 public/work/                    the Work films: <slug>.mp4 .webm -poster.webp; raw/ holds the originals (never shipped)
+public/showcase/honeyb/         the "See the difference" card: honeyb_before.png/.webp, honeyb_after.mp4/.webm, _after_poster.jpg, _avatar.png
 scripts/vite-plugin-cipherframe.ts   build-time templating, JSON-LD, CSP hash, domain placeholders
 scripts/report-sizes.mjs        gzip report + budget check (runs in npm run build)
 scripts/lighthouse.mjs          Lighthouse runner
 scripts/make-og.mjs             renders og.png
 scripts/make-grain.mjs          writes src/styles/grain.css (128px 2-bit noise PNG as a data URI)
 scripts/make-work-videos.mjs    npm run work: encodes public/work/raw/<slug>.mp4 into the web files (needs ffmpeg)
+scripts/make-showcase.mjs       npm run showcase: derives the WebP, WebM, poster and avatar from honeyb_before.png + honeyb_after.mp4
 scripts/headers-to-nginx.mjs    turns dist/_headers into nginx add_header lines (used by the Dockerfile)
 Dockerfile  nginx.conf          build the site and serve it with nginx (EasyPanel / any Docker host)
 .dockerignore
@@ -80,7 +82,7 @@ Change the file, then rebuild. The build writes the values into the HTML, so lin
 | `freeRemakesPerDay` | Used everywhere the page says "3 a day". |
 | `remakes[]` | "From our daily remake series" row; it renders only when there are entries. Each card is labelled **UNOFFICIAL CONCEPT · NOT AFFILIATED** and links to the X post. Use a 16:9 WebP/AVIF `poster`. |
 | `testimonials[]`, `clientLogos[]` | Rendered **only** for entries with `permissionConfirmed: true`. The testimonial strip appears after `#work` and the logo row under the hero proof row. With no confirmed entries, those blocks are not in the DOM at all. |
-| `videos.*` | Hero loop and the three studio-concept videos. See §3. |
+| `videos.*` | Hero loop and the two studio-concept videos. See §3. |
 | `work[]` | The Work films shown before the studio concepts: one card per entry, in order. See "Adding a film" in §3. `permission: false` shows the dashed "UNOFFICIAL CONCEPT · NOT AFFILIATED" tag; set `true` only with the brand's OK ("SHARED WITH PERMISSION"). |
 | `founder` | `name` (replace `[Your name]`). `photo` must be a real photo of you; if empty, the logo mark shows. `note` overrides the default note; separate paragraphs with a blank line. |
 | `analytics.cfBeaconToken` | Turns on Cloudflare Web Analytics (no cookies). |
@@ -105,16 +107,27 @@ How the cards behave:
 - **Analytics:** `work_video_play` (once per film per visit), `work_video_sound_on`, `work_x_click`, each with `{ slug }`.
 - **Raw originals** are committed but removed from `dist/` by the build. The Docker/nginx image caches `/work/` for a day.
 
+### The "See the difference" card (HoneyB)
+
+The card in `#difference` shows HoneyB's real announcement: the static post on the left, the 5 s film on the right. The markup is in `index.html`; the media is in `public/showcase/honeyb/`.
+
+- **Replacing the film or the static post:** overwrite `honeyb_after.mp4` (1920×1080, H.264 + AAC, faststart) and/or `honeyb_before.png` (1920×1080), then run `npm run showcase` (needs ffmpeg). It rewrites `honeyb_before.webp`, `honeyb_after.webm`, `honeyb_after_poster.jpg` (the final frame, 1280×720) and `honeyb_avatar.png` (the logo cropped from the static post and keyed onto white; the crop box is in the script). Commit and deploy.
+- **Same box on both sides.** The image and the film sit in identical `.post__media` boxes (16:9, same border and radius), so dragging the divider never shifts or letterboxes either one.
+- **No download until it plays.** The film is `preload="none"`. The poster (13 KB) is not in the HTML: browsers fetch a `<video poster>` while the page is still loading, which cost LCP 0.3 s (1.8 s to 2.2 s). Script sets it once the card is within about 1200px of the screen, so it arrives after load; without script it is the box's CSS background. The static WebP (21 KB) and the avatar (7 KB) are lazy `<img>`s.
+- **Autoplay at 40% visible, muted.** It plays while at least 40% of the film is on screen and the Motion side is showing (always on desktop; on phones only after the switch to Motion), and pauses when it leaves. Reduced motion, Save-Data and 2G/3G (Tier C) never autoplay: the poster stays and the slider still works.
+- **Sound.** A 44×44 speaker button (bottom-right of the film) unmutes it and restarts it from 0. Scrolling away, switching to Static or hiding the tab pauses it and mutes it again. Pressing the button never moves the divider.
+- **The name is fixed.** `?c=` personalises the hero, chip and closing heading, but not this card: it is a real post, so it always says HoneyB.
+- **Caching.** The Docker/nginx image and `_headers` cache `/showcase/` for a day.
+
 ### Swapping in rendered videos for the hero and the studio concepts
 
 Put MP4s (H.264, muted-friendly) in `public/videos/` or on a CDN, and set the URLs:
 
 ```ts
-videos: { hero: "", mainnet: "/videos/mainnet.mp4", lending: "/videos/lending.mp4", payment: "/videos/payment.mp4" },
+videos: { hero: "", lending: "/videos/lending.mp4", payment: "/videos/payment.mp4" },
 ```
 
-- `mainnet` replaces the live DOM loop on the right side of the before/after.
-- `lending` and `payment` (and `mainnet`) add a **Play concept** button to the matching work card. It opens a `<dialog>` with the video, lazy-loaded; Esc closes it and focus returns to the button.
+- `lending` and `payment` add a **Play concept** button to the matching work card. It opens a `<dialog>` with the video, lazy-loaded; Esc closes it and focus returns to the button.
 - `hero` replaces the code-generated transaction field in the hero with your loop.
 
 Inline videos autoplay muted only while visible. Under reduced motion they are click-to-play with controls. Videos on another domain are added to the CSP automatically at build.
@@ -293,11 +306,11 @@ Events:
 
 ## 10. Test report
 
-Run on 2026-10-22, against the production build (`vite preview`).
+Run on 2026-10-27, against the production build (`vite preview`).
 
-### Playwright: 228 passed, 0 failed
+### Playwright: 291 passed, 0 failed
 
-That is the original 136, plus 27 runs of the 8 design-system checks in `tests/brand.spec.ts`, plus 12 runs of the 2 checks in `tests/socials.spec.ts`. Chromium at all six viewports. A dash (–) means the test is scoped to other viewports on purpose: 360×640-only above-the-fold checks, mobile-only toggle and sticky bar, desktop-only slider, and build checks that run once. 71 runs are skipped that way.
+That is the earlier 228 (which already included the design-system checks and the Work films), plus 63 runs of the 12 checks for the HoneyB card in `tests/showcase.spec.ts`, `showcase-reduced.spec.ts` and `showcase-nojs.spec.ts`. Chromium at all six viewports. A dash (–) means the test is scoped to other viewports on purpose: 360×640-only above-the-fold checks, mobile-only toggle and sticky bar, desktop-only slider and playback, and build checks that run once. 105 runs are skipped that way. In one of three full runs a desktop playback test failed under parallel load and passed on the rerun (and 90 of 90 at 8 workers); I could not reproduce it, so treat the showcase playback tests as load-sensitive, like the Work ones.
 
 | Test | 360×640 | 390×844 | 414×896 | 768×1024 | 1280×800 | 1440×900 |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -350,29 +363,41 @@ That is the original 136, plus 27 runs of the 8 design-system checks in `tests/b
 | Work (f) · No horizontal scroll at 360px; the concepts swipe row is contained | ✓ | – | – | – | – | – |
 | Work · "View on X" links open the right account in a new tab and are tracked | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Work · Files exist, each video under 2.5 MB, posters are WebP, raw originals not shipped, WebM listed before MP4 | – | – | – | – | ✓ | – |
+| Showcase · The card is HoneyB (name, avatar, post line, labels/heading/hint/caption unchanged); no Arclight/Mainnet copy; no yield/earn/APY or digits in the post line | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Showcase · `?c=Foo Labs&t=mainnet` personalises the page but never renames HoneyB | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Showcase · The static image and the film fill the exact same 16:9 box (±0.5px), edge to edge | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Showcase · WebP before PNG, WebM before MP4; poster, `preload="none"`, muted, loop, playsinline | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Showcase · Every asset is served; media weighs under 1.5 MB on both the WebM and the MP4 path | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Showcase · No film bytes on load; plays muted at 40% visible; pauses when scrolled away (desktop) | – | – | – | ✓ | ✓ | ✓ |
+| Showcase · Speaker button ≥44×44 unmutes, leaves the divider alone, re-mutes when scrolled away (desktop) | – | – | – | ✓ | ✓ | ✓ |
+| Showcase · Phones: plays only on the Motion side; the hidden layer is not tappable; tapping the picture switches sides | ✓ | ✓ | ✓ | – | – | – |
+| Showcase · Reduced motion: film never loads or plays, poster shows, no sound button, slider/toggle still work | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Showcase · The card's `<video>` has `data-poster`, not `poster`, in the HTML (so it cannot delay first paint) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Showcase · No JavaScript: both pictures still show and the poster is the film box's background | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Showcase · No horizontal scroll with the new card | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Brand 8 · Contrast measured in the browser: text pairs and pill labels on washes ≥ 4.5:1; ghost border and blue focus ring ≥ 3:1 | – | ✓ | – | – | – | ✓ |
 
 ### Lighthouse mobile (simulated throttling, median of 3)
 
 | URL | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|
-| `/` | 99 | 100 | 100 | 100 | 1.8 s | 0 | 0 ms |
-| `/?c=Arclight&t=mainnet&utm_…` | 99 | 100 | 100 | 100 | 1.8 s | 0 | 0 ms |
+| `/` | 99 | 100 | 100 | 100 | 1.9 s | 0 | 10 ms |
+| `/?c=Arclight&t=mainnet&utm_…` | 99 | 100 | 100 | 100 | 1.9 s | 0 | 10 ms |
 
 ### Bundle sizes (gzip -9)
 
 | | Size | Budget |
 |---|---|---|
-| **Initial JS** (`index-*.js` + inlined boot script) | **12.7 KB** (10.1 + 2.6) | ≤ 90 KB |
-| **CSS** (render-blocking 10.6 KB + lazy Tier A grain 4.3 KB) | **14.9 KB** | ≤ 35 KB |
+| **Initial JS** (`index-*.js` + inlined boot script) | **12.8 KB** (10.2 + 2.5) | ≤ 90 KB |
+| **CSS** (render-blocking 10.4 KB + lazy Tier A grain 4.3 KB) | **14.7 KB** | ≤ 35 KB |
 | **Fonts** (5 woff2, latin; only Space Grotesk 600 preloaded) | **105.0 KB** | ≤ 120 KB |
-| HTML | 15.2 KB | — |
+| HTML | 16.7 KB | — |
 
 Lazy chunks:
 
 | Chunk | Size |
 |---|---|
-| `sections` (ScrollTrigger, SplitText, Flip, section motion) | 31.2 KB |
+| `sections` (ScrollTrigger, SplitText, Flip, section motion) | 30.7 KB |
 | `gsap-core` (core + DrawSVG) | 27.9 KB |
 | `hero-webgl` (OGL) | 15.3 KB |
 | `lenis` | 5.6 KB |
@@ -389,8 +414,19 @@ Work films (served from `/work/`, not part of the JS/CSS budgets; each under the
 | 0xbow | 172 KB | 180 KB | 3 KB | 0.5 MB |
 | archer | 216 KB | 146 KB | 6 KB | 1.4 MB |
 
+HoneyB card (served from `/showcase/honeyb/`, outside the JS/CSS budgets; the whole card is under the 1.5 MB target on both browser paths):
+
+| File | Size | Loaded |
+|---|---|---|
+| `honeyb_before.webp` (PNG fallback 51 KB, not downloaded by modern browsers) | 21 KB | lazy `<img>`, near the screen |
+| `honeyb_avatar.png` (×2 places, one request) | 7 KB | lazy `<img>`, near the screen |
+| `honeyb_after_poster.jpg` | 13 KB | set by script, near the screen, after load |
+| `honeyb_after.webm` (Chrome, Edge, Firefox) | 763 KB | when the film first plays |
+| `honeyb_after.mp4` (Safari / iOS) | 1,069 KB | when the film first plays |
+
 ### What I couldn't verify, and why
 
+- **The MP4 path.** Playwright's Chromium cannot decode H.264, so every test (and my own checks) plays the WebM. The MP4 is your original file, with its index at the front, and `nginx` serves it with range support, but no browser here has played it. Check the card once on a real iPhone.
 - **WebKit / Safari.** This environment ships Chromium only, and the brief said not to run `playwright install` here. `playwright.config.ts` adds the six WebKit projects automatically wherever WebKit is installed: run `npx playwright install webkit && npm test`.
 - **The live Cal.com embed and Tally submissions.** Tests block all third-party network calls. They check the loader, the `forwardQueryParams` flag, the queued inline config and the fallback link, but not a real booking. See §6.
 - **The CSP in a browser: now verified for our own code.** The Docker image was built and run, and the live container loaded in Chromium (Tier A, Tier B, phone, Tier C) with the real headers: 0 CSP violations. Third parties (Cal.com's iframe, Tally) are unreachable offline, so the live Cal.com embed still needs the manual check in §6. (This sandbox's proxy certificate had to be injected into a throwaway copy of the build; on a normal VPS the Dockerfile builds as-is.)
@@ -451,7 +487,7 @@ Brought onto the Cipherframe design system; behaviour, layout, copy (except the 
 31. **Card gaps.** Card grids use the 32px gap. The timeline's steps keep 16px because they are a sequence/carousel, not a card grid.
 32. **Long personalised headlines** still step down (over 44 and over 64 characters) to keep the offer above the fold at 360×640, but never above the design-system h1 size. The hero's vertical spacing moved onto the 4px scale.
 33. **Nudge** uses panel at 94% rather than the 55% glass recipe, because it floats over arbitrary content and must stay legible.
-34. **The "before" post** keeps its deliberately generic, off-brand flat colours, because it depicts the JPEG you'd post without Cipherframe.
+34. **The "before" post** originally used deliberately generic, off-brand flat colours to depict the JPEG you'd post without Cipherframe. Since 27 Oct it is HoneyB's real static post instead (decisions 52–59).
 35. **Flagged: particles forming the mark.** In the hero scroll-out and the final CTA, particles converge into the Cipherframe mark. The logo rules say "never add effects to the logo", but the brand brief didn't list this for removal and froze behaviour, so I kept it. Remove the convergence if you read the rule strictly.
 
 ### Going live on Hostinger (23 Oct 2026)
@@ -475,3 +511,14 @@ Brought onto the Cipherframe design system; behaviour, layout, copy (except the 
 49. **The long unofficial tag wraps on phones under about 390px** (it is 35 characters of mono at 0.72rem). It stays one line from 390px up. The brand test measures the one-line CONCEPT tag for the 24px height.
 50. **Concept cards use `h4`** under the new "Studio concepts" `h3`, so headings stay in order.
 51. **Flagged: the Spout film shows "0% APR" and a price chart.** The site's own rules say no returns, APY or charts in visuals, and the FAQ says "we never write price or return claims". It is an unofficial concept for a real company, so check you are comfortable with that line before you share the page widely.
+
+### HoneyB in "See the difference" (27 Oct 2026)
+
+52. **Masters and derived files.** The static post (`honeyb_before.png`, your 1920×1080 image) and the film (`honeyb_after.mp4`, 60 fps, with sound) are shipped exactly as supplied. The WebP, WebM, poster and avatar are derived by `npm run showcase`. The optional 1080×1080 variants were not made: the media box stays 16:9 at every width, so nothing is ever cropped.
+53. **Flagged: the logo does not match across the divider.** The two media boxes are identical (tested to ±0.5px), but the compositions differ. The static post has a small logo on cream with the headline under it; the film starts and ends on a larger, centred logo on white. Drag the divider through the middle and you see two different pictures, not one logo continuing across. If you want a seamless reveal, re-export the static post from the film's final frame, or the film's first and last frames on cream with the logo placed as in the static post.
+54. **The film is started by an observer, not the `autoplay` attribute, and is `preload="none"`.** Same behaviour as specified (plays muted at 40% visible, pauses when it leaves, not under reduced motion), but about 0.8 MB no longer starts downloading with the page. The poster stands in.
+55. **Speaker button is 44×44, not 32.** It matches the Work films and the site's touch-target floor, and shares their CSS (navy fill, thin ring). It is hidden under reduced motion and Tier C, where nothing plays. It stops the press from reaching the card, so it never moves the divider.
+56. **The name is fixed.** The post name no longer follows `?c=`. A DM visitor with `?c=Foo` still gets "Foo" in the hero, chip and closing heading, but this card is a real post and always says HoneyB.
+57. **Dead code removed with the old card:** the flat placeholder, the live kinetic loop (`initKinetic`, the `.kin*` CSS, the `mainnetMedia` build block), the `videos.mainnet` config key and the now-unused `onVisibility` helper.
+58. **Phone fixes found on the way.** On Static the hidden Motion layer is now `visibility: hidden`, so it cannot catch taps or keyboard focus (before, a video in that layer would have swallowed them). Tapping the picture now switches sides; the old tap handler ignored taps on any `<video>`.
+59. **The poster is set by script, not by the `poster` attribute.** With the attribute in the HTML, Lighthouse mobile dropped from 99 to 98 and LCP rose from 1.8 s to 2.2 s (I confirmed by removing it: back to 99 and 1.9 s). It is also 1280×720 (13 KB), and converted with the right colour matrix: the film is BT.709 and JPEG is BT.601, and without an explicit conversion the orange came out duller (232,106,6 instead of 242,110,0). The Work films still use the `poster` attribute (about 19 KB for three); moving them to the same approach is an easy follow-up if you want the last 0.1 s. Flag: the card shows HoneyB's own wording ("Income arrives") with no "shared with permission" label, as briefed; confirm HoneyB has agreed to appear.

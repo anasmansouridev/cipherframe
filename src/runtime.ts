@@ -76,13 +76,6 @@ export function whenNear(el: Element, fn: () => void, margin = "200px 0px"): voi
   io.observe(el);
 }
 
-/** Toggle a class while an element is on screen, for pausing loops. */
-export function onVisibility(el: Element, cb: (visible: boolean) => void, margin = "0px"): () => void {
-  const io = new IntersectionObserver((entries) => entries.forEach((e) => cb(e.isIntersecting)), { rootMargin: margin });
-  io.observe(el);
-  return () => io.disconnect();
-}
-
 /**
  * Manual scroll anchoring (Safari has none): run a layout-changing `fn` and keep whatever
  * the visitor is looking at in place, e.g. a DM deep link to #pricing while lazy features load.

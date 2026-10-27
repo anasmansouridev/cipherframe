@@ -404,9 +404,15 @@
   place-items: center;
   width: 38px;
   height: 38px;
+  overflow: hidden;
   border-radius: 50%;
-  background: var(--midnight);
+  background: #fff;
   border: 1px solid var(--grid-line);
+}
+.post__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .post__name {
   font-weight: 600;
@@ -414,129 +420,34 @@
 .post__text {
   margin: 10px 0 12px;
 }
+/* The static post and the film fill the same 16:9 box, so the logo lines up when the divider moves. */
 .post__media {
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 9;
   border-radius: 14px;
   border: 1px solid var(--grid-line);
+  background: #fff3df;
 }
+.post__media--video {
+  background: #fff;
+}
+/* A <video poster> is fetched while the page is still loading (and delays LCP), so script sets it once the card is
+   near. Without script the poster is the box's background instead. */
+.no-js .post__media--video {
+  background: #fff url("/showcase/honeyb/honeyb_after_poster.jpg") center / cover no-repeat;
+}
+.post__media picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.post__media img,
 .post__media video {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.flat {
-  display: grid;
-  place-content: center;
-  text-align: center;
-  background: #1c2645;
-}
-.flat__shape {
-  position: absolute;
-  right: 8%;
-  top: 14%;
-  width: 18%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #25335a;
-}
-.flat__title {
-  position: relative;
-  font: 600 clamp(1.4rem, 5.5vw, 2.3rem) / 1 var(--font-display);
-  color: #d5dcea;
-}
-.flat__sub {
-  position: relative;
-  margin-top: 4px;
-  color: var(--steel);
-  font-size: 0.95rem;
-}
-
-.kin {
-  background: var(--midnight);
-}
-.kin__brackets {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: var(--ice);
-  stroke-width: 2.5;
-  stroke-linecap: square;
-}
-.kin__brackets path {
-  vector-effect: non-scaling-stroke;
-}
-.kin__br--l {
-  transform-origin: 30px 90px;
-}
-.kin__br--r {
-  transform-origin: 290px 90px;
-}
-.kin__copy {
-  position: absolute;
-  left: 12%;
-  top: 50%;
-  translate: 0 -50%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  max-width: 56%;
-}
-.kin__title {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font: 600 clamp(1.3rem, 6vw, 2.7rem) / 1.05 var(--font-display);
-  letter-spacing: -0.02em;
-  color: var(--ice);
-}
-.kin__line {
-  font: 500 clamp(0.68rem, 2.3vw, 0.98rem) / 1.2 var(--font-mono);
-  letter-spacing: 0.12em;
-  color: var(--ice);
-}
-.kin__line em {
-  font-style: normal;
-  color: var(--signal-mint);
-}
-.kin__pill {
-  margin-top: 6px;
-}
-.kin__hex {
-  position: absolute;
-  right: 9%;
-  top: 50%;
-  translate: 0 -50%;
-  width: 26%;
-  overflow: visible;
-}
-.kin__hexpath {
-  fill: var(--deep-navy);
-  stroke: var(--signal-mint);
-  stroke-width: 3;
-  stroke-linejoin: round;
-}
-.kin__hexin {
-  fill: var(--panel);
-  stroke: var(--signal-mint);
-  stroke-opacity: 0.5;
-}
-.kin__dot {
-  fill: var(--packet-blue);
-}
-.kin__sweep {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(100deg, transparent 35%, rgba(234, 240, 250, 0.14) 50%, transparent 65%);
-  opacity: 0;
-  pointer-events: none;
 }
 
 /* Mobile: two-state toggle instead of the slider */
@@ -578,10 +489,15 @@
   .js .ba__layer--motion {
     clip-path: none;
     opacity: 0;
-    transition: opacity 0.45s var(--ease);
+    visibility: hidden;
+    transition:
+      opacity 0.45s var(--ease),
+      visibility 0s 0.45s;
   }
   .js .ba[data-state="motion"] .ba__layer--motion {
     opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
   }
   .js .ba__label--right {
     left: 20px;
@@ -1117,7 +1033,8 @@
 .wv__toggle:hover .wv__play {
   border-color: var(--ice);
 }
-.wv__sound {
+.wv__sound,
+.ba__sound {
   position: absolute;
   right: var(--space-3);
   bottom: var(--space-3);
@@ -1132,22 +1049,28 @@
   color: var(--ice);
   transition: border-color 0.2s var(--ease);
 }
-.wv__sound:hover {
+.wv__sound:hover,
+.ba__sound:hover {
   border-color: var(--ice);
 }
-.wv__sound.is-on {
+.wv__sound.is-on,
+.ba__sound.is-on {
   border-color: var(--signal-mint);
   color: var(--signal-mint);
 }
-.wv__sound .icon {
+.wv__sound .icon,
+.ba__sound .icon {
   width: 20px;
   height: 20px;
 }
 .wv__ico--on,
-.wv__sound.is-on .wv__ico--off {
+.ba__ico--on,
+.wv__sound.is-on .wv__ico--off,
+.ba__sound.is-on .ba__ico--off {
   display: none;
 }
-.wv__sound.is-on .wv__ico--on {
+.wv__sound.is-on .wv__ico--on,
+.ba__sound.is-on .ba__ico--on {
   display: block;
 }
 .wv__body {

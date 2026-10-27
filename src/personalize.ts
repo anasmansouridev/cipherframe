@@ -67,10 +67,6 @@ export function applyPersonalization(p: Personalization = getPersonalization()):
 
   $$("[data-p='final-h2']").forEach((el) => (el.textContent = finalHeadline(p)));
 
-  const name = p.project ?? "Arclight";
-  $$("[data-p='project']").forEach((el) => (el.textContent = name));
-  $$("[data-p='project-upper']").forEach((el) => (el.textContent = name.toUpperCase()));
-
   $$("[data-p='chip']").forEach((el) => (el.hidden = !p.project));
   $$("[data-p='chip-name']").forEach((el) => (el.textContent = p.project ?? ""));
 

@@ -1,5 +1,6 @@
 import { track } from "../analytics";
-import { $, $$, isMobileWidth, prefersReducedMotion } from "../runtime";
+import { $, $$, isMobileWidth, prefersReducedMotion, whenNear } from "../runtime";
+import { getTier, onTierChange } from "../tier";
 
 export type BaState = "split" | "static" | "motion";
 
@@ -68,7 +69,7 @@ export function initBeforeAfter(): void {
 
   // Mobile toggle
   frame.addEventListener("click", (e) => {
-    if (!isMobileWidth() || (e.target as Element).closest("video, button, a")) return;
+    if (!isMobileWidth() || (e.target as Element).closest("button, a")) return;
     setState(root.dataset.state === "motion" ? "static" : "motion");
     firstUse("tap");
   });
@@ -122,6 +123,67 @@ export function initBeforeAfter(): void {
     { threshold: 0.5 },
   );
   io.observe(frame);
+
+  initShowcaseVideo(root);
+}
+
+/**
+ * The film on the Cipherframe side of the card. Nothing downloads until it first plays
+ * (preload="none"; the poster stands in). It plays muted while at least 40% of it is on screen
+ * and the Motion side is showing, and pauses (and re-mutes) when it leaves. Reduced motion and
+ * Save-Data / slow networks (Tier C) never autoplay: the poster stays. The speaker button
+ * unmutes it and restarts it from 0 so the sound lines up with the picture.
+ */
+function initShowcaseVideo(root: HTMLElement): void {
+  const video = $<HTMLVideoElement>("[data-ba-video]", root);
+  const sound = $<HTMLButtonElement>("[data-ba-sound]", root);
+  if (!video) return;
+  // A <video poster> is fetched the moment the tag is parsed, which competes with the first paint. Set it
+  // once the card is near the screen instead (every tier: it is also what reduced motion shows).
+  whenNear(video, () => (video.poster = video.dataset.poster ?? ""), "1200px 0px");
+  if (prefersReducedMotion() || getTier() === "C") return;
+
+  let visible = false;
+  let state = root.dataset.state ?? "split";
+
+  const setMuted = (muted: boolean) => {
+    video.muted = muted;
+    sound?.classList.toggle("is-on", !muted);
+    sound?.setAttribute("aria-label", muted ? "Turn sound on" : "Turn sound off");
+  };
+  const sync = () => {
+    if (visible && state !== "static" && !document.hidden && getTier() !== "C") void video.play().catch(() => undefined);
+    else {
+      video.pause();
+      setMuted(true);
+    }
+  };
+
+  new IntersectionObserver(
+    (entries) => {
+      visible = entries.some((e) => e.isIntersecting && e.intersectionRatio >= 0.4);
+      sync();
+    },
+    { threshold: [0, 0.4] },
+  ).observe(video);
+  root.addEventListener("ba:state", (e) => {
+    state = (e as CustomEvent<string>).detail;
+    if (state === "motion") video.currentTime = 0;
+    sync();
+  });
+  document.addEventListener("visibilitychange", sync);
+  onTierChange(sync);
+
+  if (!sound) return;
+  sound.hidden = false;
+  // The card is a drag surface: a press on the button must not move the divider.
+  sound.addEventListener("pointerdown", (e) => e.stopPropagation());
+  sound.addEventListener("click", () => {
+    if (!video.muted) return setMuted(true);
+    setMuted(false);
+    video.currentTime = 0;
+    void video.play().catch(() => setMuted(true));
+  });
 }
 
 /** Configured MP4s (hero, mainnet): muted autoplay while visible; click-to-play with controls under reduced motion. */

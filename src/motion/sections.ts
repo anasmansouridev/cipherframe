@@ -11,7 +11,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { track } from "../analytics";
 import { fallbackMode, paintStops, setTimelineMode, wantsPinned } from "../components/timeline";
-import { $, $$, idle, isFinePointer, keepAnchor, onVisibility, whenNear } from "../runtime";
+import { $, $$, idle, isFinePointer, keepAnchor, whenNear } from "../runtime";
 import type { Tier } from "../tier";
 import { registry } from "./registry";
 
@@ -50,7 +50,6 @@ export function initMotion(tier: Tier): void {
   connectHero();
   initPinnedTimeline();
   refreshOnResize();
-  near("#difference", initKinetic, "50% 0px");
   near("#problem", initProblem);
   near("#desk", initDesk);
   near("#work", initWork);
@@ -75,48 +74,6 @@ function connectHero(): void {
     end: "bottom top",
     onUpdate: (self) => registry.hero?.setScroll(self.progress),
   });
-}
-
-/** M3: live DOM kinetic announcement, a 6s loop. Plays only while visible (and in Motion state on mobile). */
-function initKinetic(): void {
-  const kin = $("[data-kin]");
-  const root = $("[data-ba]");
-  if (!kin || !root) return;
-  const title = $("[data-kin-title]", kin)!;
-  const line = $("[data-kin-line]", kin)!;
-  const pill = $("[data-kin-pill]", kin);
-  const dots = $$("[data-kin-dot]", kin);
-  const brl = $(".kin__br--l", kin);
-  const brr = $(".kin__br--r", kin);
-  const hex = $(".kin__hexpath", kin);
-  const sweep = $(".kin__sweep", kin);
-  const t = SplitText.create(title, { type: "chars" });
-  const l = SplitText.create(line, { type: "chars" });
-
-  const tl = gsap.timeline({ repeat: -1, paused: true, defaults: { ease: EASE } });
-  tl.fromTo([brl, brr], { opacity: 0, x: (i: number) => (i ? -96 : 96) }, { opacity: 1, x: 0, duration: 0.35 }, 0)
-    .fromTo(t.chars, { opacity: 0, yPercent: 70, scale: 1.5 }, { opacity: 1, yPercent: 0, scale: 1, duration: 0.5, stagger: 0.035 }, 0.3)
-    .fromTo(l.chars, { opacity: 0 }, { opacity: 1, duration: 0.01, stagger: 0.045, ease: "none" }, 0.95)
-    .fromTo(pill, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.4 }, 1.75)
-    .fromTo(dots, { opacity: 0, x: -150 }, { opacity: 1, x: 0, duration: 0.75, stagger: 0.1 }, 1.9)
-    .fromTo(hex, { strokeOpacity: 1 }, { strokeOpacity: 0.35, duration: 0.18, yoyo: true, repeat: 1 }, 2.75)
-    .fromTo(sweep, { opacity: 1, xPercent: -110 }, { xPercent: 110, duration: 0.9, ease: "power2.inOut" }, 3.05)
-    .to([t.chars, l.chars, pill, dots, brl, brr], { opacity: 0, duration: 0.4, ease: "power2.in" }, 5.5)
-    .set({}, {}, 6);
-
-  let visible = false;
-  let state = root.dataset.state ?? "split";
-  const sync = () => (visible && state !== "static" ? tl.play() : tl.pause());
-  onVisibility(kin, (v) => {
-    visible = v;
-    sync();
-  });
-  root.addEventListener("ba:state", (e) => {
-    state = (e as CustomEvent<string>).detail;
-    if (state === "motion") tl.restart();
-    sync();
-  });
-  document.addEventListener("visibilitychange", () => (document.hidden ? tl.pause() : sync()));
 }
 
 /** M4: pain cards stagger in, their "dead feed" thumbnails flicker out; the closing line reveals word by word. */

@@ -14,5 +14,8 @@
 /work/*
   Cache-Control: public, max-age=86400
 
+/showcase/*
+  Cache-Control: public, max-age=86400
+
 /index.html
   Cache-Control: public, max-age=0, must-revalidate

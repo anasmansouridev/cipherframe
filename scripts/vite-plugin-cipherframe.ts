@@ -181,31 +181,6 @@ function founderNoteBlock(): string {
     .join("");
 }
 
-/** The right side of the before/after: a configured MP4, or the live DOM kinetic loop. */
-function mainnetMediaBlock(): string {
-  if (CONFIG.videos.mainnet)
-    return `<div class="post__media post__media--video"><video data-autoplay muted loop playsinline preload="none" controls width="1280" height="720" src="${esc(CONFIG.videos.mainnet)}" aria-label="Animated mainnet announcement"></video></div>`;
-  return `<div class="post__media kin" data-kin aria-label="Animated version: the project name slams in, MAINNET IS LIVE types on and a CONFIRMED pill pops" role="img">
-              <svg class="kin__brackets" viewBox="0 0 320 180" preserveAspectRatio="none" aria-hidden="true"><path class="kin__br kin__br--l" d="M40 30H22v120h18"/><path class="kin__br kin__br--r" d="M280 30h18v120h-18"/></svg>
-              <div class="kin__copy" aria-hidden="true">
-                <span class="kin__title" data-kin-title data-p="project-upper">ARCLIGHT</span>
-                <span class="kin__line" data-kin-line>MAINNET IS <em>LIVE</em></span>
-                <span class="pill pill--mint kin__pill" data-kin-pill>CONFIRMED</span>
-              </div>
-              <svg class="kin__hex" viewBox="0 0 120 120" aria-hidden="true"><path class="kin__hexpath" d="M60 10 103 35v50L60 110 17 85V35Z"/><path class="kin__hexin" d="M60 34 82 47v26L60 86 38 73V47Z"/>${[
-                [48, 50],
-                [66, 46],
-                [58, 62],
-                [74, 64],
-                [46, 72],
-                [62, 78],
-              ]
-                .map(([cx, cy]) => `<circle class="kin__dot" data-kin-dot r="3.2" cx="${cx}" cy="${cy}"/>`)
-                .join("")}</svg>
-              <span class="kin__sweep" aria-hidden="true"></span>
-            </div>`;
-}
-
 /** "Prefer DMs? Message @handle on X." Rendered only when an X handle and a link exist; with no X account it is absent. */
 function dmLineBlock(): string {
   const s = CONFIG.social;
@@ -335,7 +310,6 @@ function renderBlocks(html: string): string {
     remakes: remakesBlock,
     founderMedia: founderMediaBlock,
     founderNote: founderNoteBlock,
-    mainnetMedia: mainnetMediaBlock,
     heroVideo: heroVideoBlock,
     dmLine: dmLineBlock,
     workVideos: workVideosBlock,
