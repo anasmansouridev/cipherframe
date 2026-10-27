@@ -1,6 +1,7 @@
 import { track } from "../analytics";
 import { $, $$, isMobileWidth, prefersReducedMotion, whenNear } from "../runtime";
 import { getTier, onTierChange } from "../tier";
+import { onSoundElsewhere, soundOn } from "./sound-bus";
 
 export type BaState = "split" | "static" | "motion";
 
@@ -173,6 +174,7 @@ function initShowcaseVideo(root: HTMLElement): void {
   });
   document.addEventListener("visibilitychange", sync);
   onTierChange(sync);
+  onSoundElsewhere((v) => v === video, () => setMuted(true));
 
   if (!sound) return;
   sound.hidden = false;
@@ -181,6 +183,7 @@ function initShowcaseVideo(root: HTMLElement): void {
   sound.addEventListener("click", () => {
     if (!video.muted) return setMuted(true);
     setMuted(false);
+    soundOn(video);
     video.currentTime = 0;
     void video.play().catch(() => setMuted(true));
   });

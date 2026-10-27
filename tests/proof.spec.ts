@@ -7,5 +7,5 @@ test("9 · testimonials and logos are absent from the DOM while their CONFIG arr
   await expect(page.locator("[data-testimonials], .testimonial")).toHaveCount(0);
   await expect(page.locator("[data-logos], .logos")).toHaveCount(0);
   await expect(page.locator("[data-remakes]")).toHaveCount(0);
-  await expect(page.locator(".work .tag")).toHaveText(["CONCEPT", "CONCEPT", "CONCEPT"]);
+  await expect(page.locator(".work .tag")).toHaveText(["ORIGINAL", "CONCEPT", "CONCEPT"]);
 });

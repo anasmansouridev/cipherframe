@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "og": "node scripts/make-og.mjs",
     "work": "node scripts/make-work-videos.mjs",
-    "showcase": "node scripts/make-showcase.mjs"
+    "showcase": "node scripts/make-showcase.mjs",
+    "concepts": "node scripts/make-concept-videos.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",

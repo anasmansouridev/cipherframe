@@ -907,11 +907,12 @@
 /* ============ 6 · WORK ============ */
 .works {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--space-6);
 }
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .works {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-8);
   }
 }
 .work {
@@ -925,10 +926,6 @@
   overflow: hidden;
   background: var(--midnight);
   border-bottom: 1px solid var(--grid-line);
-}
-.work__media svg {
-  width: 100%;
-  height: 100%;
 }
 .work__body {
   display: flex;
@@ -944,9 +941,6 @@
   font-size: var(--fs-label);
   color: var(--steel);
   letter-spacing: 0.04em;
-}
-.work__play {
-  margin-top: 6px;
 }
 .work__cta {
   display: flex;
@@ -1104,7 +1098,7 @@
   text-underline-offset: 3px;
 }
 
-/* Studio concepts: the three fictional pieces, about 70% size on desktop, a swipe row on mobile */
+/* Studio concepts: three films, about 70% width on desktop */
 .concepts {
   margin-top: var(--space-16);
 }
@@ -1117,99 +1111,94 @@
     margin-inline: auto;
   }
 }
-@media (max-width: 899.98px) {
-  .concepts .works {
-    display: flex;
-    gap: var(--space-4);
-    margin-inline: calc(-1 * var(--gutter));
-    padding: 2px var(--gutter) var(--space-2);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--gutter);
-    scrollbar-width: none;
-    overscroll-behavior-x: contain;
-  }
-  .concepts .works::-webkit-scrollbar {
-    display: none;
-  }
-  .concepts .work {
-    flex: 0 0 min(80%, 340px);
-    scroll-snap-align: start;
-  }
-}
 
-.wm--mainnet {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-left: 10%;
-  gap: 2px;
+/* The film replaces the illustration in .work__media (same 16:9 box, same dark top area).
+   The poster is set by script once the card is near the screen; without script it is the box's background. */
+.cv__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.wm__line {
-  font: 500 0.78rem / 1.2 var(--font-mono);
-  letter-spacing: 0.14em;
-  color: var(--steel);
+.no-js .cv__media {
+  background: var(--midnight) var(--poster) center / cover no-repeat;
 }
-.wm__line--big {
-  font: 600 clamp(1.8rem, 4vw, 2.6rem) / 1 var(--font-display);
-  letter-spacing: -0.02em;
+.cv__open {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.cv__open:focus-visible,
+.cv__sound:focus-visible {
+  outline-offset: -4px;
+}
+.cv__play {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--steel);
+  background: rgba(10, 15, 30, 0.82);
   color: var(--ice);
+  opacity: 0;
+  transition: border-color 0.2s var(--ease);
 }
-.wm__line em {
-  font-style: normal;
+.cv__play .icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 2px; /* optical centring of the triangle */
+}
+.cv.is-manual .cv__play {
+  opacity: 1;
+}
+.cv__open:hover .cv__play {
+  border-color: var(--ice);
+}
+/* 32px circle in the bottom-right corner; the invisible ring around it makes the tap target 44px. */
+.cv__sound {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  z-index: 2;
+  display: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--grid-line);
+  background: rgba(10, 15, 30, 0.82);
+  color: var(--ice);
+  transition: border-color 0.2s var(--ease);
+}
+.cv__sound::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+.cv.is-playing .cv__sound {
+  display: grid;
+}
+.cv__sound:hover {
+  border-color: var(--ice);
+}
+.cv__sound[aria-pressed="true"] {
+  border-color: var(--signal-mint);
   color: var(--signal-mint);
 }
-.wm__bar {
-  width: 38%;
-  height: 3px;
-  margin-top: 10px;
-  border-radius: 3px;
-  background: var(--signal-mint);
-  transform-origin: left;
+.cv__sound .icon {
+  width: 16px;
+  height: 16px;
 }
-.wm__vault,
-.wm__node {
-  fill: var(--deep-navy);
-  stroke: var(--signal-mint);
-  stroke-width: 2;
+.cv__ico--on,
+.cv__sound[aria-pressed="true"] .cv__ico--off {
+  display: none;
 }
-.wm__dial {
-  fill: none;
-  stroke: var(--packet-blue);
-  stroke-width: 2;
-  stroke-dasharray: 6 5;
-}
-.wm__lane {
-  stroke: var(--grid-line);
-  stroke-width: 2;
-  stroke-dasharray: 3 6;
-}
-.wm__coin {
-  fill: var(--packet-blue);
-}
-.wm__coin--in {
-  transform: translateX(84px);
-}
-.wm__coin--out {
-  fill: var(--signal-mint);
-  transform: translateX(250px);
-}
-.wm__coin--d2 {
-  opacity: 0;
-}
-.wm__label {
-  font: 500 10px var(--font-mono);
-  letter-spacing: 0.1em;
-  fill: var(--steel);
-}
-.wm__pay {
-  fill: var(--signal-mint);
-  transform: translateX(168px);
-}
-.wm__settled {
-  position: absolute;
-  right: 8%;
-  top: 14%;
+.cv__sound[aria-pressed="true"] .cv__ico--on {
+  display: block;
 }
 
 /* ============ 7 · COMPARE ============ */
@@ -2101,7 +2090,7 @@
 }
 
 .video-dialog {
-  width: min(960px, calc(100vw - 32px));
+  width: min(90vw, 1280px, calc((100vh - 140px) * 16 / 9));
   padding: 0;
   border: 1px solid var(--grid-line);
   border-radius: var(--radius-card);

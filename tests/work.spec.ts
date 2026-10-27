@@ -132,7 +132,7 @@ test("work (e) · each card shows the tag for its permission value, and never th
   await expect(page.locator(".concepts .work")).toHaveCount(3);
 });
 
-test("work (f) · no horizontal scroll at 360px, with the swipe row contained", async ({ page }, info) => {
+test("work (f) · no horizontal scroll at 360px, and the concept cards stack in one column", async ({ page }, info) => {
   test.skip(viewportOf(info).width !== 360, "360px only");
   await hermetic(page);
   await page.goto("/");
@@ -145,13 +145,14 @@ test("work (f) · no horizontal scroll at 360px, with the swipe row contained", 
     sw: document.documentElement.scrollWidth,
     cw: document.documentElement.clientWidth,
     cards: Array.from(document.querySelectorAll(".wv")).map((c) => Math.round(c.getBoundingClientRect().right)),
-    row: (() => {
-      const r = document.querySelector<HTMLElement>(".concepts .works")!;
-      return { scrolls: r.scrollWidth > r.clientWidth, snap: getComputedStyle(r).scrollSnapType };
-    })(),
+    concepts: Array.from(document.querySelectorAll(".concepts .work")).map((c) => {
+      const r = c.getBoundingClientRect();
+      return { left: Math.round(r.left), right: Math.round(r.right) };
+    }),
   }));
   expect(m.sw).toBeLessThanOrEqual(m.cw);
   expect(Math.max(...m.cards)).toBeLessThanOrEqual(360);
-  expect(m.row.scrolls).toBe(true);
-  expect(m.row.snap).toContain("x");
+  expect(m.concepts).toHaveLength(3);
+  expect(new Set(m.concepts.map((c) => c.left)).size, "one column").toBe(1);
+  expect(Math.max(...m.concepts.map((c) => c.right))).toBeLessThanOrEqual(360);
 });

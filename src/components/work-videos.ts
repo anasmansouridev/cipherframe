@@ -1,6 +1,7 @@
 import { track } from "../analytics";
 import { $, $$ } from "../runtime";
 import { getTier, onTierChange } from "../tier";
+import { onSoundElsewhere, soundOn } from "./sound-bus";
 
 /**
  * Work films. Rules:
@@ -127,6 +128,7 @@ export function initWorkVideos(): void {
       if (c.video.muted) {
         for (const o of cards) if (o !== c) setMuted(o, true);
         setMuted(c, false);
+        soundOn(c.video);
         c.video.currentTime = 0;
         c.userPaused = false;
         pinned = c;
@@ -138,6 +140,10 @@ export function initWorkVideos(): void {
     });
   }
 
+  onSoundElsewhere(
+    (v) => cards.some((c) => c.video === v),
+    () => cards.forEach((c) => setMuted(c, true)),
+  );
   for (const a of $$<HTMLAnchorElement>("[data-work-x]")) a.addEventListener("click", () => track("work_x_click", { slug: a.dataset.workX ?? "" }));
 
   document.addEventListener("visibilitychange", () => {

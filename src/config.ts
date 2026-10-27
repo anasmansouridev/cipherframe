@@ -10,7 +10,7 @@
  * - testimonials and clientLogos only render with permissionConfirmed: true.
  * - remakes are labelled "UNOFFICIAL CONCEPT · NOT AFFILIATED" automatically.
  */
-import type { WorkItem } from "./work.ts";
+import type { ConceptItem, WorkItem } from "./work.ts";
 
 export const CONFIG = {
   domain: "https://cipherframe.studio",
@@ -36,7 +36,7 @@ export const CONFIG = {
   remakes: [] as { project: string; announcement: string; xPostUrl: string; poster: string }[],
   testimonials: [] as { quote: string; name: string; role: string; project: string; permissionConfirmed: boolean }[],
   clientLogos: [] as { name: string; src: string; permissionConfirmed: boolean }[],
-  videos: { hero: "", lending: "", payment: "" },
+  videos: { hero: "" },
   /**
    * Films in the Work section, shown before the studio concepts. Files live in public/work/
    * (npm run work encodes them from public/work/raw/). permission: false shows the dashed
@@ -80,6 +80,38 @@ export const CONFIG = {
       permission: false,
     },
   ] as WorkItem[],
+  /**
+   * Studio concepts, the three films under the Work films, in card order. Files live in public/work/
+   * (npm run concepts encodes them from public/work/raw/concepts/). tag: ORIGINAL = our own piece,
+   * CONCEPT = a studio concept (for a third-party brand, "UNOFFICIAL CONCEPT" says more). audio: false
+   * hides the sound button.
+   */
+  concepts: [
+    {
+      slug: "work-01-pinned",
+      tag: "ORIGINAL",
+      title: "Static to motion · 48 hours.",
+      meta: "15s · 16:9",
+      line: "A flat mainnet post turns into a full network announcement.",
+      audio: true,
+    },
+    {
+      slug: "work-02-honeyb",
+      tag: "CONCEPT",
+      title: "Brand film · HoneyB.",
+      meta: "5s · 16:9 + 1:1",
+      line: "Bars become the hive. Bitcoin stays, income arrives.",
+      audio: true,
+    },
+    {
+      slug: "work-03-trezor-arc",
+      tag: "CONCEPT",
+      title: "Launch film · Trezor × Arc.",
+      meta: "7s · 16:9 + 1:1 · 3D",
+      line: "A coin rides the arc and lands on the Trusted Display.",
+      audio: true,
+    },
+  ] as ConceptItem[],
   founder: { name: "Anas Mansouri", photo: "", note: "" }, // empty note = default text
   analytics: { cfBeaconToken: "", eventEndpoint: "" },
 };

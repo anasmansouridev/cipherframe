@@ -16,7 +16,7 @@ import { build, type Plugin, type ResolvedConfig } from "vite";
 import { CONFIG } from "../src/config.ts";
 import { icon, mark } from "../src/icons.ts";
 import { finalHeadline, heroHeadline } from "../src/personalize.ts";
-import { workTag } from "../src/work.ts";
+import { conceptFiles, workTag } from "../src/work.ts";
 
 /**
  * Official brand files (PART 3 of the brand pass): when public/brand/ holds them, they are
@@ -226,16 +226,40 @@ export function workVideosBlock(): string {
         </div>`;
 }
 
+/**
+ * The Studio concepts (CONFIG.concepts): the same card as before (dark media area on top, lighter panel below),
+ * with a 16:9 film in the media area. Videos are preload="none" and the poster is set by script once the card
+ * is near the screen (a `poster` attribute is fetched while the page is still loading); without script the
+ * poster is the box's background. Exported so tests can render it.
+ */
+export function conceptVideosBlock(): string {
+  return CONFIG.concepts
+    .map((c) => {
+      const f = conceptFiles(c.slug);
+      const sound = c.audio
+        ? `<button class="cv__sound" type="button" data-cv-sound aria-pressed="false" aria-label="Sound: ${esc(c.title)}">${icon("mute", "icon cv__ico cv__ico--off")}${icon("sound", "icon cv__ico cv__ico--on")}</button>`
+        : "";
+      return `<article class="work glass cv" data-cv data-slug="${esc(c.slug)}">
+              <div class="work__media cv__media" style="--poster: url(${esc(f.poster)})">
+                <video class="cv__video" muted loop playsinline preload="none" data-poster="${esc(f.poster)}" width="1280" height="720" aria-hidden="true" tabindex="-1"><source src="${esc(f.webm)}" type="video/webm"><source src="${esc(f.mp4)}" type="video/mp4"></video>
+                <button class="cv__open" type="button" data-cv-open aria-label="Open video: ${esc(c.title)}"><span class="cv__play" aria-hidden="true">${icon("play")}</span></button>
+                ${sound}
+              </div>
+              <div class="work__body">
+                <span class="tag mono">${esc(c.tag)}</span>
+                <h4>${esc(c.title)}</h4>
+                <p class="mono work__spec">${esc(c.meta)}</p>
+                <p>${esc(c.line)}</p>
+              </div>
+            </article>`;
+    })
+    .join("\n            ");
+}
+
 /** A rendered hero loop (CONFIG.videos.hero) replaces the code-generated transaction field. */
 function heroVideoBlock(): string {
   if (!CONFIG.videos.hero) return "";
   return `<video class="hero__video" data-autoplay muted loop playsinline preload="none" controls width="1000" height="900" src="${esc(CONFIG.videos.hero)}" aria-label="Cipherframe showreel"></video>`;
-}
-
-function playButton(key: keyof typeof CONFIG.videos, title: string): string {
-  const src = CONFIG.videos[key];
-  if (!src) return "";
-  return `<button class="btn btn--ghost work__play" type="button" data-play="${esc(src)}" data-play-title="${esc(title)}">${icon("play")}Play concept</button>`;
 }
 
 const stripTags = (html: string) =>
@@ -313,8 +337,8 @@ function renderBlocks(html: string): string {
     heroVideo: heroVideoBlock,
     dmLine: dmLineBlock,
     workVideos: workVideosBlock,
+    concepts: conceptVideosBlock,
     twitterSite: twitterSiteBlock,
-    play: (key, ...title) => playButton(key as keyof typeof CONFIG.videos, title.join(":")),
   };
   return html.replace(/<!--@([a-zA-Z]+)((?::[^>]*?)?)-->/g, (whole, name: string, args: string) => {
     if (name === "early" || name === "jsonld") return whole;

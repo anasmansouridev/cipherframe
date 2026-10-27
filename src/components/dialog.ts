@@ -1,9 +1,24 @@
 import { prefersReducedMotion } from "../runtime";
+import { soundOn } from "./sound-bus";
 
 /**
- * Lazy-loaded: "Play concept" opens a native <dialog> with the MP4 (only rendered when a
- * video URL is configured). showModal() traps focus and Esc closes; focus returns to the opener.
+ * Lazy-loaded lightbox for the Studio concepts: a native <dialog> with the film, native controls, sound on,
+ * starting from 0. showModal() traps focus and Esc closes; so do the close button and a click on the dark
+ * backdrop. Focus returns to the opener. Under reduced motion it does not autoplay (press play on the controls).
  */
+export interface VideoSource {
+  src: string;
+  type: string;
+}
+
+export interface VideoDialogOptions {
+  title: string;
+  sources: VideoSource[];
+  poster?: string;
+  opener?: HTMLElement;
+  onClose?: () => void;
+}
+
 /** The design-system x (close) icon: 24px grid, 1.5px stroke, round caps. */
 function xIcon(): SVGSVGElement {
   const ns = "http://www.w3.org/2000/svg";
@@ -18,7 +33,7 @@ function xIcon(): SVGSVGElement {
   return svg;
 }
 
-export function openVideo(src: string, title: string, opener?: HTMLElement): void {
+export function openVideo({ title, sources, poster, opener, onClose }: VideoDialogOptions): void {
   const dialog = document.createElement("dialog");
   dialog.className = "video-dialog";
   dialog.setAttribute("aria-label", title);
@@ -35,13 +50,15 @@ export function openVideo(src: string, title: string, opener?: HTMLElement): voi
   bar.append(h, close);
 
   const video = document.createElement("video");
-  video.src = src;
   video.controls = true;
   video.playsInline = true;
-  video.preload = "metadata";
-  if (!prefersReducedMotion()) {
-    video.muted = true;
-    video.autoplay = true;
+  video.preload = "auto";
+  if (poster) video.poster = poster;
+  for (const s of sources) {
+    const source = document.createElement("source");
+    source.src = s.src;
+    source.type = s.type;
+    video.append(source);
   }
 
   dialog.append(bar, video);
@@ -54,7 +71,10 @@ export function openVideo(src: string, title: string, opener?: HTMLElement): voi
     video.pause();
     dialog.remove();
     opener?.focus();
+    onClose?.();
   });
   dialog.showModal();
   close.focus();
+  soundOn(video); // every film on the page is muted while this one has sound
+  if (!prefersReducedMotion()) void video.play().catch(() => undefined);
 }

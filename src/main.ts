@@ -6,6 +6,7 @@
 import { initScrollTracking, loadBeacon, track, trackOnView, type EventName } from "./analytics";
 import { initBeforeAfter, initInlineVideos } from "./components/before-after";
 import { initCompare } from "./components/compare";
+import { initConceptVideos } from "./components/concept-videos";
 import { startCountdown } from "./components/countdown";
 import { CTA_KEY, initNudge } from "./components/nudge";
 import { initSticky } from "./components/sticky-cta";
@@ -50,14 +51,13 @@ function boot(): void {
   idle(() => {
     initBeforeAfter();
     initInlineVideos();
-    initWorkPreviews();
+    initConceptVideos();
     initWorkVideos();
   }, 600);
   idle(() => {
     initNudge();
     initCal();
     initCopy();
-    initVideoButtons();
     trackOnView(document.getElementById("pricing"), "pricing_view");
     loadBeacon();
   }, 1200);
@@ -153,29 +153,6 @@ function initCopy(): void {
       if (status) status.textContent = "";
     }, 2000);
   });
-}
-
-function initVideoButtons(): void {
-  $$<HTMLButtonElement>("[data-play]").forEach((b) =>
-    b.addEventListener("click", async () => {
-      const { openVideo } = await import("./components/dialog");
-      openVideo(b.dataset.play ?? "", b.dataset.playTitle ?? "Concept video", b);
-    }),
-  );
-}
-
-/** M7: CSS previews loop only while on screen; on touch, a tap plays a 1.5s pulse. */
-function initWorkPreviews(): void {
-  toggleOnScreen($$(".wm"), "is-playing");
-  $$<HTMLElement>("[data-work]").forEach((card) =>
-    card.addEventListener("pointerup", (e) => {
-      if (e.pointerType === "mouse" || (e.target as Element).closest("button, a")) return;
-      card.classList.remove("is-pulse");
-      void card.offsetWidth;
-      card.classList.add("is-pulse");
-      window.setTimeout(() => card.classList.remove("is-pulse"), 1500);
-    }),
-  );
 }
 
 /** One observer for many elements: toggles `cls` while each is on screen (or off screen with `invert`). */

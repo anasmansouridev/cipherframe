@@ -34,7 +34,7 @@ src/personalize.ts              ?c / ?t sanitising and headline copy
 src/utm.ts                      first-touch UTMs (sessionStorage) and URL decoration
 src/analytics.ts                track(), Cloudflare beacon, scroll depth, pricing_view
 src/icons.ts                    Lucide-style icons and the logo mark (rendered at build)
-src/components/                 before-after, timeline, compare, sticky-cta, nudge, countdown, work-videos, dialog (lazy)
+src/components/                 before-after, timeline, compare, sticky-cta, nudge, countdown, work-videos, concept-videos, sound-bus, dialog (lazy lightbox)
 src/integrations/               cal.ts (lazy Cal.com inline embed), tally.ts
 src/motion/hero-webgl.ts        Tier A particle field (lazy, OGL)
 src/motion/hero-canvas.ts       Tier B particle field (lazy, Canvas 2D)
@@ -45,7 +45,8 @@ src/styles/                     tokens.css (design-system tokens) base.css glass
                                 grain.css (generated noise tile; lazy, Tier A only)
 public/                         favicon.svg og.png (1200×630) _headers robots.txt sitemap.xml llms.txt
 public/brand/ (optional)        official logo and icon SVGs; inlined at build when present (§7)
-public/work/                    the Work films: <slug>.mp4 .webm -poster.webp; raw/ holds the originals (never shipped)
+public/work/                    the Work films (<slug>.mp4 .webm -poster.webp) and the Studio concepts (work-0N-*.mp4 .webm .jpg);
+                                raw/ and raw/concepts/ hold the originals (never shipped)
 public/showcase/honeyb/         the "See the difference" card: honeyb_before.png/.webp, honeyb_after.mp4/.webm, _after_poster.jpg, _avatar.png
 scripts/vite-plugin-cipherframe.ts   build-time templating, JSON-LD, CSP hash, domain placeholders
 scripts/report-sizes.mjs        gzip report + budget check (runs in npm run build)
@@ -53,6 +54,7 @@ scripts/lighthouse.mjs          Lighthouse runner
 scripts/make-og.mjs             renders og.png
 scripts/make-grain.mjs          writes src/styles/grain.css (128px 2-bit noise PNG as a data URI)
 scripts/make-work-videos.mjs    npm run work: encodes public/work/raw/<slug>.mp4 into the web files (needs ffmpeg)
+scripts/make-concept-videos.mjs  npm run concepts: encodes public/work/raw/concepts/<slug>.mp4 into the Studio concepts files (needs ffmpeg)
 scripts/make-showcase.mjs       npm run showcase: derives the WebP, WebM, poster and avatar from honeyb_before.png + honeyb_after.mp4
 scripts/headers-to-nginx.mjs    turns dist/_headers into nginx add_header lines (used by the Dockerfile)
 Dockerfile  nginx.conf          build the site and serve it with nginx (EasyPanel / any Docker host)
@@ -82,7 +84,8 @@ Change the file, then rebuild. The build writes the values into the HTML, so lin
 | `freeRemakesPerDay` | Used everywhere the page says "3 a day". |
 | `remakes[]` | "From our daily remake series" row; it renders only when there are entries. Each card is labelled **UNOFFICIAL CONCEPT · NOT AFFILIATED** and links to the X post. Use a 16:9 WebP/AVIF `poster`. |
 | `testimonials[]`, `clientLogos[]` | Rendered **only** for entries with `permissionConfirmed: true`. The testimonial strip appears after `#work` and the logo row under the hero proof row. With no confirmed entries, those blocks are not in the DOM at all. |
-| `videos.*` | Hero loop and the two studio-concept videos. See §3. |
+| `videos.hero` | A rendered hero loop that replaces the code-generated field. See §3. |
+| `concepts[]` | The three Studio concepts films, in card order: `slug` (file name in `public/work/`), `tag`, `title`, `meta`, `line`, `audio`. See "The Studio concepts" in §3. |
 | `work[]` | The Work films shown before the studio concepts: one card per entry, in order. See "Adding a film" in §3. `permission: false` shows the dashed "UNOFFICIAL CONCEPT · NOT AFFILIATED" tag; set `true` only with the brand's OK ("SHARED WITH PERMISSION"). |
 | `founder` | `name` (replace `[Your name]`). `photo` must be a real photo of you; if empty, the logo mark shows. `note` overrides the default note; separate paragraphs with a blank line. |
 | `analytics.cfBeaconToken` | Turns on Cloudflare Web Analytics (no cookies). |
@@ -103,7 +106,7 @@ How the cards behave:
 - **Autoplay at 50% visible, muted, one at a time.** The first card in reading order that is on screen plays and keeps playing until it leaves; leaving pauses it. Scrolling away forgets a manual pause.
 - **Tap the film** to pause or play (it is a real button, so keyboard and screen readers work). **The round speaker button** unmutes that film only and restarts it from 0 so the sound lines up; any other film is muted and paused.
 - **Tap-only mode:** with reduced motion, Save-Data, 2G/3G, or when the FPS probe drops the page to Tier C, nothing autoplays; each poster shows a play button.
-- **Layout:** 3 columns on desktop, 2 + 1 on tablet, 1 column on phones. The studio concepts sit below at about 70% width, as a swipe row on phones.
+- **Layout:** 3 columns on desktop, 2 + 1 on tablet, 1 column on phones. The studio concepts sit below at about 70% width on desktop.
 - **Analytics:** `work_video_play` (once per film per visit), `work_video_sound_on`, `work_x_click`, each with `{ slug }`.
 - **Raw originals** are committed but removed from `dist/` by the build. The Docker/nginx image caches `/work/` for a day.
 
@@ -119,15 +122,26 @@ The card in `#difference` shows HoneyB's real announcement: the static post on t
 - **The name is fixed.** `?c=` personalises the hero, chip and closing heading, but not this card: it is a real post, so it always says HoneyB.
 - **Caching.** The Docker/nginx image and `_headers` cache `/showcase/` for a day.
 
-### Swapping in rendered videos for the hero and the studio concepts
+### The Studio concepts (three films under the Work films)
 
-Put MP4s (H.264, muted-friendly) in `public/videos/` or on a CDN, and set the URLs:
+Each card is the section's usual card (dark media area on top, lighter panel below) with a 16:9 film in the media area. Copy, tag and meta live in `concepts[]` in `src/config.ts`; the files live in `public/work/`.
+
+- **Replacing a film:** overwrite `public/work/raw/concepts/<slug>.mp4`, then `npm run concepts` (or `npm run concepts -- <slug>`; needs ffmpeg). It writes `<slug>.mp4` (H.264, 1280px wide, CRF 23, AAC 128k, faststart), `<slug>.webm` (VP9 + Opus) and `<slug>.jpg` (1280px, about JPEG quality 80). Each file must be under 3 MB; if the first pass is over, the script retries at 30 fps and then with a higher CRF. The poster frames are set in `POSTERS` at the top of `scripts/make-concept-videos.mjs` (1.0 s, the last frame, 6.9 s).
+- **No download until a card is near.** Videos are `preload="none"`. The poster is not in the HTML: script sets it once the card is within about 1200px of the screen (a `<video poster>` is fetched while the page is still loading), and without script it is the box's CSS background.
+- **Plays only while at least half the picture is on screen, always muted.** Every card is independent, so on desktop all three play together; on phones only the ones in view do. Leaving the screen pauses and re-mutes.
+- **Sound.** A 32px speaker button sits bottom-right of each film (its tap target is 44px, an invisible ring around it). It has an `aria-label` and `aria-pressed`. Unmuting one film mutes every other film on the page, including the Work films and the See the difference card (`src/components/sound-bus.ts`). The button only shows while the film is playing, and is not rendered when `audio: false`.
+- **Lightbox.** The picture is a real button (`Open video: …`). Enter, Space or a click opens a native `<dialog>`: dark overlay, the film centred at no more than 90vw (and never taller than the screen), native controls, sound on, from 0. Esc, a click on the overlay, or the close button closes it, and focus goes back to the card. Inline films stop while it is open and resume after. Under reduced motion it does not autoplay.
+- **Reduced motion, Save-Data, 2G/3G, or a browser that blocks `play()`:** nothing plays inline. The poster shows a play button that opens the lightbox. A blocked `play()` is caught: nothing is logged.
+- **Files:** `public/work/` rather than `public/assets/`. This site has no `public/assets/`; `/assets/` is the hashed build output, served with a one-year `immutable` cache, which is wrong for files that keep their names. `/work/` is cached for a day.
+
+### Swapping in a rendered hero loop
+
+Put an MP4 (H.264, muted-friendly) in `public/videos/` or on a CDN and set the URL:
 
 ```ts
-videos: { hero: "", lending: "/videos/lending.mp4", payment: "/videos/payment.mp4" },
+videos: { hero: "/videos/hero.mp4" },
 ```
 
-- `lending` and `payment` add a **Play concept** button to the matching work card. It opens a `<dialog>` with the video, lazy-loaded; Esc closes it and focus returns to the button.
 - `hero` replaces the code-generated transaction field in the hero with your loop.
 
 Inline videos autoplay muted only while visible. Under reduced motion they are click-to-play with controls. Videos on another domain are added to the CSP automatically at build.
@@ -308,9 +322,9 @@ Events:
 
 Run on 2026-10-27, against the production build (`vite preview`).
 
-### Playwright: 291 passed, 0 failed
+### Playwright: 349 passed, 0 failed
 
-That is the earlier 228 (which already included the design-system checks and the Work films), plus 63 runs of the 12 checks for the HoneyB card in `tests/showcase.spec.ts`, `showcase-reduced.spec.ts` and `showcase-nojs.spec.ts`. Chromium at all six viewports. A dash (–) means the test is scoped to other viewports on purpose: 360×640-only above-the-fold checks, mobile-only toggle and sticky bar, desktop-only slider and playback, and build checks that run once. 105 runs are skipped that way. In one of three full runs a desktop playback test failed under parallel load and passed on the rerun (and 90 of 90 at 8 workers); I could not reproduce it, so treat the showcase playback tests as load-sensitive, like the Work ones.
+That is the earlier 228 (which already included the design-system checks and the Work films), plus 63 runs of the 12 checks for the HoneyB card (`tests/showcase*.spec.ts`), plus 58 runs of the 12 checks for the Studio concepts (`tests/concepts*.spec.ts` and the file checks in `tests/build.spec.ts`). Chromium at all six viewports. A dash (–) means the test is scoped to other viewports on purpose: 360×640-only above-the-fold checks, mobile-only toggle and sticky bar, desktop-only slider and playback, and build checks that run once. 119 runs are skipped that way. In one of three full runs a desktop playback test failed under parallel load and passed on the rerun (and 90 of 90 at 8 workers); I could not reproduce it, so treat the showcase playback tests as load-sensitive, like the Work ones.
 
 | Test | 360×640 | 390×844 | 414×896 | 768×1024 | 1280×800 | 1440×900 |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -360,7 +374,7 @@ That is the earlier 228 (which already included the design-system checks and the
 | Work (c) · The speaker button (≥44×44) unmutes only that film; the previous one is re-muted and paused | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Work (d) · Reduced motion: nothing autoplays or loads, a play button shows, tap plays muted | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Work (e) · Each card shows the tag for its `permission` value (also rendered with `true`); the word "client" never appears | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Work (f) · No horizontal scroll at 360px; the concepts swipe row is contained | ✓ | – | – | – | – | – |
+| Work (f) · No horizontal scroll at 360px; the concept cards stack in one column | ✓ | – | – | – | – | – |
 | Work · "View on X" links open the right account in a new tab and are tracked | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Work · Files exist, each video under 2.5 MB, posters are WebP, raw originals not shipped, WebM listed before MP4 | – | – | – | – | ✓ | – |
 | Showcase · The card is HoneyB (name, avatar, post line, labels/heading/hint/caption unchanged); no Arclight/Mainnet copy; no yield/earn/APY or digits in the post line | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -375,36 +389,47 @@ That is the earlier 228 (which already included the design-system checks and the
 | Showcase · The card's `<video>` has `data-poster`, not `poster`, in the HTML (so it cannot delay first paint) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Showcase · No JavaScript: both pictures still show and the poster is the film box's background | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Showcase · No horizontal scroll with the new card | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Concepts · Three cards in order with the specified tags, titles, meta and lines; no old illustrations or Play-concept buttons | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Concepts · Picture is 16:9, spans the card, clipped by its 14px corners; 3 columns from 768px, 1 column with 24px gaps below | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Concepts · No concept bytes on load; no `poster` attribute in the HTML; only the near card's poster is set and fetched | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Concepts · Only pictures ≥50% on screen play, always muted; off screen pauses | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Concepts · 32px speaker button bottom-right with `aria-pressed`; unmuting one mutes the other two; scrolling away re-mutes | – | – | – | ✓ | ✓ | ✓ |
+| Concepts · Only one film on the whole page has sound (a Work film and a concept silence each other; the lightbox silences all) | – | – | – | ✓ | ✓ | ✓ |
+| Concepts · Lightbox from the keyboard: sound on, from 0, controls, ≤90vw and centred, focus trapped; Esc, close button and overlay click each close it and return focus; clicking the picture opens it | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Concepts · Reduced motion: no autoplay or film download, play button on every poster, no sound button, lightbox does not autoplay | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Concepts · `play()` blocked: play button shows, no console errors or uncaught rejections | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Concepts · No layout shift (CLS entries inside the section) and no card height change while media loads | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Concepts · Files: WebM + MP4 each under 3 MB, 1280px JPEG posters, WebM before MP4 | – | – | – | – | ✓ | – |
 | Brand 8 · Contrast measured in the browser: text pairs and pill labels on washes ≥ 4.5:1; ghost border and blue focus ring ≥ 3:1 | – | ✓ | – | – | – | ✓ |
 
 ### Lighthouse mobile (simulated throttling, median of 3)
 
 | URL | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|
-| `/` | 99 | 100 | 100 | 100 | 1.9 s | 0 | 10 ms |
-| `/?c=Arclight&t=mainnet&utm_…` | 99 | 100 | 100 | 100 | 1.9 s | 0 | 10 ms |
+| `/` | 99 | 100 | 100 | 100 | 2.0 s | 0 | 10 ms |
+| `/?c=Arclight&t=mainnet&utm_…` | 99 | 100 | 100 | 100 | 2.0 s | 0 | 0 ms |
 
 ### Bundle sizes (gzip -9)
 
 | | Size | Budget |
 |---|---|---|
-| **Initial JS** (`index-*.js` + inlined boot script) | **12.8 KB** (10.2 + 2.5) | ≤ 90 KB |
-| **CSS** (render-blocking 10.4 KB + lazy Tier A grain 4.3 KB) | **14.7 KB** | ≤ 35 KB |
+| **Initial JS** (`index-*.js` + inlined boot script) | **13.6 KB** (10.9 + 2.8) | ≤ 90 KB |
+| **CSS** (render-blocking 10.0 KB + lazy Tier A grain 4.3 KB) | **14.4 KB** | ≤ 35 KB |
 | **Fonts** (5 woff2, latin; only Space Grotesk 600 preloaded) | **105.0 KB** | ≤ 120 KB |
-| HTML | 16.7 KB | — |
+| HTML | 16.9 KB | — |
 
 Lazy chunks:
 
 | Chunk | Size |
 |---|---|
-| `sections` (ScrollTrigger, SplitText, Flip, section motion) | 30.7 KB |
+| `sections` (ScrollTrigger, SplitText, Flip, section motion) | 30.8 KB |
 | `gsap-core` (core + DrawSVG) | 27.9 KB |
 | `hero-webgl` (OGL) | 15.3 KB |
 | `lenis` | 5.6 KB |
 | `decode` (ScrambleText) | 3.9 KB |
 | `hero-canvas` | 1.2 KB |
 | `field` | 1.1 KB |
-| `dialog` | 0.6 KB |
+| `dialog` (the lightbox) | 0.7 KB |
 
 Work films (served from `/work/`, not part of the JS/CSS budgets; each under the 2.5 MB target):
 
@@ -413,6 +438,14 @@ Work films (served from `/work/`, not part of the JS/CSS budgets; each under the
 | spout | 197 KB | 196 KB | 7 KB | 3.7 MB |
 | 0xbow | 172 KB | 180 KB | 3 KB | 0.5 MB |
 | archer | 216 KB | 146 KB | 6 KB | 1.4 MB |
+
+Studio concepts (served from `/work/`; every file is under the 3 MB target; none loads until its card is near the screen):
+
+| Film | MP4 | WebM | Poster | Original |
+|---|---|---|---|---|
+| work-01-pinned (15 s, sound) | 1144 KB | 806 KB | 22 KB | 3.9 MB |
+| work-02-honeyb (5 s, sound) | 611 KB | 621 KB | 11 KB | 1.1 MB |
+| work-03-trezor-arc (7 s, sound) | 535 KB | 337 KB | 26 KB | 9.3 MB |
 
 HoneyB card (served from `/showcase/honeyb/`, outside the JS/CSS budgets; the whole card is under the 1.5 MB target on both browser paths):
 
@@ -426,7 +459,7 @@ HoneyB card (served from `/showcase/honeyb/`, outside the JS/CSS budgets; the wh
 
 ### What I couldn't verify, and why
 
-- **The MP4 path.** Playwright's Chromium cannot decode H.264, so every test (and my own checks) plays the WebM. The MP4 is your original file, with its index at the front, and `nginx` serves it with range support, but no browser here has played it. Check the card once on a real iPhone.
+- **The MP4 path.** Playwright's Chromium cannot decode H.264, so every test (and my own checks) plays the WebM. The MP4s (the HoneyB card's original, and the three concept films, re-encoded here) have their index at the front and nginx serves them with range support, but no browser here has played them. Check the cards and the lightbox once on a real iPhone.
 - **WebKit / Safari.** This environment ships Chromium only, and the brief said not to run `playwright install` here. `playwright.config.ts` adds the six WebKit projects automatically wherever WebKit is installed: run `npx playwright install webkit && npm test`.
 - **The live Cal.com embed and Tally submissions.** Tests block all third-party network calls. They check the loader, the `forwardQueryParams` flag, the queued inline config and the fallback link, but not a real booking. See §6.
 - **The CSP in a browser: now verified for our own code.** The Docker image was built and run, and the live container loaded in Chromium (Tier A, Tier B, phone, Tier C) with the real headers: 0 CSP violations. Third parties (Cal.com's iframe, Tally) are unreachable offline, so the live Cal.com embed still needs the manual check in §6. (This sandbox's proxy certificate had to be injected into a throwaway copy of the build; on a normal VPS the Dockerfile builds as-is.)
@@ -522,3 +555,16 @@ Brought onto the Cipherframe design system; behaviour, layout, copy (except the 
 57. **Dead code removed with the old card:** the flat placeholder, the live kinetic loop (`initKinetic`, the `.kin*` CSS, the `mainnetMedia` build block), the `videos.mainnet` config key and the now-unused `onVisibility` helper.
 58. **Phone fixes found on the way.** On Static the hidden Motion layer is now `visibility: hidden`, so it cannot catch taps or keyboard focus (before, a video in that layer would have swallowed them). Tapping the picture now switches sides; the old tap handler ignored taps on any `<video>`.
 59. **The poster is set by script, not by the `poster` attribute.** With the attribute in the HTML, Lighthouse mobile dropped from 99 to 98 and LCP rose from 1.8 s to 2.2 s (I confirmed by removing it: back to 99 and 1.9 s). It is also 1280×720 (13 KB), and converted with the right colour matrix: the film is BT.709 and JPEG is BT.601, and without an explicit conversion the orange came out duller (232,106,6 instead of 242,110,0). The Work films still use the `poster` attribute (about 19 KB for three); moving them to the same approach is an easy follow-up if you want the last 0.1 s. Flag: the card shows HoneyB's own wording ("Income arrives") with no "shared with permission" label, as briefed; confirm HoneyB has agreed to appear.
+
+### Studio concepts as films (27 Oct 2026)
+
+60. **Files are in `public/work/`, not `public/assets/`.** The brief said "the existing public/assets folder"; this site has none, and `/assets/` is Vite's hashed build output with a one-year `immutable` cache, which is wrong for files that keep their names. `/work/` is cached for a day and already served by nginx and `_headers`. The raw originals sit in `public/work/raw/concepts/` and are removed from `dist/` at build.
+61. **A WebM is shipped next to each MP4 (WebM first).** The brief asked for MP4s only. Playwright's Chromium cannot decode H.264, so without the WebM none of the playback tests could run. Chrome, Edge and Firefox take the WebM; Safari takes the MP4. Both are under 3 MB, with sound.
+62. **Card 1 is the cut with sound.** The first pinned video you sent had no audio track at all; the second (with sound) is a slightly different cut (cursor and typing animation, "network active" label), and it replaced the first. Its title and line are mine, written from the film ("Static to motion · 48 hours.", "A flat mainnet post turns into a full network announcement."); both are one-line edits in `concepts[]`. The film carries its own "Concept · fictional project" watermark for Arclight.
+63. **Flagged: the HoneyB film is 5 seconds, not 7.** `ffprobe` says 5.0 s (it is the same file as the See the difference card). The meta line says `5s · 16:9 + 1:1`, not the `7s` in the brief. The "1:1" is your copy; no 1:1 file is in this repo.
+64. **Flagged: the Trezor card is tagged CONCEPT, as briefed.** Trezor and Arc are third-party brands, and the Work films above use the longer `UNOFFICIAL CONCEPT · NOT AFFILIATED`. "CONCEPT" next to a "×" can read as an official piece. If you want the stronger label, change `tag` for that entry in `concepts[]`; the card handles the length (it wraps under about 390px, like the Work tags).
+65. **32px sound button with a 44px tap target.** The visible circle is 32px as briefed; an invisible 6px ring around it keeps the touch target at 44px, the same as the other films. It only appears while the film plays, and is not rendered for a film with `audio: false`.
+66. **One sound on the whole page, not just in this row.** Unmuting a concept also mutes the Work films and the See the difference card, and the other way round, through `src/components/sound-bus.ts`. Opening the lightbox mutes everything.
+67. **The grid breakpoint moved from 900px to 768px, and the swipe row is gone.** Three columns from 768px, one column with 24px gaps below, as briefed. The row stays at about 70% width on desktop (unchanged), so at 768px the cards are about 210px wide; the type fits, but it is the tightest size.
+68. **Dead code removed with the illustrations:** the CSS-animated `.wm` previews and their keyframes, the tap-pulse, `initWorkPreviews`, the "Play concept" buttons and `videos.lending` / `videos.payment`. The lightbox (`dialog.ts`) was reused and extended: several sources, a poster, sound on, a close callback.
+69. **Tests pin Tier B** for the playback checks, and wait for the speaker button to be visible before clicking it: it shows when the `playing` event fires, which can be later than `paused` turning false under load.

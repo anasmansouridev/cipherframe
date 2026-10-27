@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
 import { CONFIG } from "../src/config.ts";
+import { conceptFiles } from "../src/work.ts";
 
 const dist = path.resolve("dist");
 const DOMAIN = CONFIG.domain.replace(/\/+$/, "");
@@ -66,6 +67,40 @@ test("work films: files exist and are small, posters are webp, and the raw origi
   expect(html).toContain('preload="none"');
   // WebM is listed before MP4 so browsers that can play it prefer the smaller file
   for (const w of CONFIG.work) if (w.webm) expect(html.indexOf(`<source src="${w.webm}"`)).toBeLessThan(html.indexOf(`<source src="${w.video}"`));
+});
+
+/** Width and height of a baseline/progressive JPEG, read from its SOF marker. */
+function jpegSize(file: string): { w: number; h: number } {
+  const b = fs.readFileSync(file);
+  expect(b.readUInt16BE(0), `${file} is a JPEG`).toBe(0xffd8);
+  for (let i = 2; i < b.length; ) {
+    expect(b[i]).toBe(0xff);
+    const marker = b[i + 1];
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) return { h: b.readUInt16BE(i + 5), w: b.readUInt16BE(i + 7) };
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  throw new Error(`no SOF marker in ${file}`);
+}
+
+test("studio concepts: webm, mp4 and a 1280px JPEG poster exist per film, each film under 3 MB, WebM before MP4, no poster attribute", () => {
+  const MAX = 3 * 1000 * 1000;
+  const html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
+  expect(CONFIG.concepts).toHaveLength(3);
+  for (const c of CONFIG.concepts) {
+    const f = conceptFiles(c.slug);
+    for (const file of [f.webm, f.mp4]) {
+      const p = path.join(dist, file.replace(/^\//, ""));
+      expect(fs.existsSync(p), file).toBe(true);
+      expect(fs.statSync(p).size, `${file} must stay under 3 MB`).toBeLessThan(MAX);
+    }
+    const size = jpegSize(path.join(dist, f.poster.replace(/^\//, "")));
+    expect(size.w, f.poster).toBe(1280);
+    expect(Math.abs(size.w / size.h - 16 / 9)).toBeLessThan(0.01);
+    expect(html.indexOf(`<source src="${f.webm}"`)).toBeGreaterThan(-1);
+    expect(html.indexOf(`<source src="${f.webm}"`)).toBeLessThan(html.indexOf(`<source src="${f.mp4}"`));
+    expect(html).toContain(`data-poster="${f.poster}"`);
+  }
+  expect(html).not.toContain("/work/raw/");
 });
 
 test("CSP: the inline boot script's sha256 is in dist/_headers, and no third-party script hosts beyond Cal.com and Cloudflare", () => {
