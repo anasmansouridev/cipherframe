@@ -1735,27 +1735,63 @@
 .option__title .icon {
   color: var(--signal-mint);
 }
+/* The Cal.com iframe grows to the full height of its content (the day view lists every slot). It lives in a
+   fixed-height window instead, so the section stays short: scroll it with the wheel, a swipe or the scrollbar. */
 .cal {
   position: relative;
-  min-height: 680px;
+  height: clamp(500px, 78svh, 620px);
   border-radius: var(--radius-card);
   overflow: hidden;
   background: rgba(10, 15, 30, 0.6);
   border: 1px solid var(--grid-line);
 }
-@media (min-width: 1024px) {
-  .cal {
-    min-height: 600px;
-  }
-}
 .cal__embed {
   position: relative;
   z-index: 1;
   width: 100%;
-  min-height: inherit;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--steel) transparent;
+}
+.cal__embed::-webkit-scrollbar {
+  width: 10px;
+}
+.cal__embed::-webkit-scrollbar-track {
+  background: transparent;
+}
+.cal__embed::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--steel);
+  background-clip: padding-box;
 }
 .cal__embed iframe {
   width: 100% !important;
+}
+.cal__hint {
+  position: absolute;
+  bottom: var(--space-3);
+  left: 50%;
+  z-index: 2;
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--grid-line);
+  border-radius: var(--radius-pill);
+  background: rgba(10, 15, 30, 0.82);
+  color: var(--steel);
+  font-size: var(--fs-label);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.cal__hint .icon {
+  width: 14px;
+  height: 14px;
 }
 .cal__skeleton {
   position: absolute;

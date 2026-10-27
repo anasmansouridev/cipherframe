@@ -210,6 +210,7 @@ Cal.com receives the same values: `forwardQueryParams` is on, and they're also p
 - [ ] Test inside the **X app** on iOS and on Android.
 - [ ] Test inside the **LinkedIn app** on iOS and on Android.
 - [ ] Book a test call through the inline calendar, and once through the "Open it in your browser" link.
+- [ ] On a real phone and on desktop: pick a date in the inline calendar and check that the time list scrolls inside its window (wheel, swipe, scrollbar), that "Scroll for more" goes away at the bottom, and that the page still scrolls past it. The tests use a stand-in for Cal.com's iframe, not the real one.
 - [ ] Submit both Tally forms from a DM-style link and confirm `c`, `t` and the UTMs arrived in the hidden fields.
 - [ ] Click every link: hero CTAs, sticky bar, pricing buttons, FAQ "Order a $200 clip", the DM line, the footer handles, email copy.
 - [ ] Check the DM button opens X (DM link if `xDmUrl` is set).
@@ -400,6 +401,10 @@ That is the earlier 228 (which already included the design-system checks and the
 | Concepts · `play()` blocked: play button shows, no console errors or uncaught rejections | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Concepts · No layout shift (CLS entries inside the section) and no card height change while media loads | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Concepts · Files: WebM + MP4 each under 3 MB, 1280px JPEG posters, WebM before MP4 | – | – | – | – | ✓ | – |
+| Calendar · A tall embed sits in a fixed-height window (500–620px) and the page does not grow | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Calendar · The wheel scrolls the calendar, not the page (smooth scrolling on); "Scroll for more" shows until the bottom | – | – | – | ✓ | ✓ | ✓ |
+| Calendar · No cue and no scrolling when the embed fits | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Calendar · Phones: a native scroller (no touch-action override) with a gutter beside it for the page | ✓ | ✓ | ✓ | – | – | – |
 | Brand 8 · Contrast measured in the browser: text pairs and pill labels on washes ≥ 4.5:1; ghost border and blue focus ring ≥ 3:1 | – | ✓ | – | – | – | ✓ |
 
 ### Lighthouse mobile (simulated throttling, median of 3)
@@ -574,3 +579,9 @@ Brought onto the Cipherframe design system; behaviour, layout, copy (except the 
 70. **Fit list, "Not for you if".** `You're launching a memecoin.` and `You want price predictions or return promises in your videos.` are replaced by `You want a different look for every post.` and `You can't review a style frame within a day.` They describe who the model does not suit (it sells one system and a 12-hour style frame) instead of who is excluded by topic. The exclusions are not gone: the FAQ still says "Do you work with memecoins? No" and "we never write price or return claims", and `llms.txt` says "Never memecoins, never project tokens". Two lines in `index.html` if you want other words.
 71. **Hero air on phones is 96px (was 28px).** It is `clamp(32px, 100svh − 560px, 96px)` under the 52px header, so a normal phone gets about 100px between the logo and the eyebrow and a 640px-tall one gets 84px, with the offer and the risk line still above the fold. A long personalised headline (`?c=` over 44 characters) keeps the old tight 10–28px, because it needs that room itself to stay above the fold at 360×640. Tablet and desktop are unchanged.
 72. **The founding bar has no box.** The glass card (fill, border, radius, padding) is gone; the pips and the two lines sit directly on the page. `foundingSlotsLeft: 0` still hides the whole bar.
+
+### Calendar window (27 Oct 2026)
+
+73. **The calendar is a fixed-height window, not a column.** Cal.com's iframe grows to the full height of its content, and the day view lists every 15-minute slot, which made the section several screens tall. `.cal` is now `clamp(500px, 78svh, 620px)` tall and `.cal__embed` scrolls vertically inside it: mouse wheel, touch swipe, or the thin themed scrollbar. A small "Scroll for more" pill shows at the bottom while there is more below and goes at the end (`cal.ts`, `watchScroll`). The window has a fixed height from first paint, so it also causes no layout shift.
+74. **Marked `data-lenis-prevent`**, so Tier A's smooth scrolling does not take the wheel from it. Scrolls past the end of the list chain on to the page.
+75. **Flag: not tested against the real Cal.com.** The sandbox cannot reach it, so the tests use a 3,000px stand-in iframe. Check the real embed on a phone and on desktop (checklist in §6), especially that keyboard Tab through the time slots brings the focused slot into view inside the window. The height is `clamp(500px, 78svh, 620px)`; if Cal's month view needs scrolling on a small phone, raise the 620px cap in `src/styles/sections.css`.

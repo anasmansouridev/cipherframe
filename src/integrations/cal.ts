@@ -49,9 +49,25 @@ function loader(): CalFn {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+/**
+ * The embed grows to its content's height, so it sits in a fixed-height scrolling window (.cal__embed).
+ * "Scroll for more" shows while there is more below, and goes once the visitor reaches the end.
+ */
+function watchScroll(embed: HTMLElement, hint: HTMLElement | null, frame: HTMLIFrameElement): void {
+  if (!hint) return;
+  const update = () => {
+    const below = embed.scrollHeight - embed.clientHeight - embed.scrollTop;
+    hint.hidden = below <= 24;
+  };
+  embed.addEventListener("scroll", update, { passive: true });
+  new ResizeObserver(update).observe(frame);
+  update();
+}
+
 /** Inline month-view embed, lazy-loaded within 600px of the viewport, with a skeleton and a plain-link fallback. */
 export function initCal(): void {
   const host = $("[data-cal]");
+  const hint = $("[data-cal-hint]");
   const fallback = $<HTMLAnchorElement>("[data-cal-fallback]");
   const params = attributionParams();
   if (fallback) {
@@ -99,6 +115,7 @@ export function initCal(): void {
           mo.disconnect();
           frame.title ||= "Book a 15-minute call with Cipherframe";
           frame.addEventListener("load", markLoaded, { once: true });
+          watchScroll(embed, hint, frame);
         });
         mo.observe(embed, { childList: true, subtree: true });
       }
