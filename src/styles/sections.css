@@ -4,14 +4,20 @@
   position: relative;
   isolation: isolate;
   margin-top: -52px;
-  padding: calc(52px + 24px) 0 clamp(72px, 9vw, 112px);
-  /* Air under the logo grows with the screen: 28px on most phones, down to 10px at 640px tall,
-     where the offer + risk line must still fit above the fold. */
-  padding-top: calc(52px + clamp(10px, calc(100svh - 630px), 28px));
+  padding: calc(52px + 64px) 0 clamp(72px, 9vw, 112px);
+  /* Air under the logo on phones: 96px on a normal phone, less on a very short one (80px at 640px tall),
+     so the offer and the risk line still fit above the fold. */
+  padding-top: calc(52px + clamp(32px, calc(100svh - 560px), 96px));
 }
 .hero__grid {
   display: grid;
   gap: 40px;
+}
+/* A long personalised headline (?c=) takes the room itself, so it keeps the tight air to stay above the fold. */
+@media (max-width: 767.98px) {
+  .hero:has(.h1.is-long) {
+    padding-top: calc(52px + clamp(10px, calc(100svh - 630px), 28px));
+  }
 }
 @media (min-width: 768px) {
   .hero {
@@ -1449,7 +1455,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-6);
-  padding: var(--space-6);
+  padding-block: var(--space-2);
 }
 .founding__title {
   margin-bottom: var(--space-1);

@@ -119,7 +119,7 @@ function foundingBlock(): string {
   if (!(left > 0)) return "";
   const total = CONFIG.foundingTotal;
   const pips = Array.from({ length: total }, (_, i) => (i < total - left ? `<span class="pip is-taken"><i></i></span>` : `<span class="pip"></span>`)).join("");
-  return `<aside class="founding glass" data-founding aria-labelledby="founding-title">
+  return `<aside class="founding" data-founding aria-labelledby="founding-title">
           <div class="founding__pips" data-pips role="img" aria-label="${total - left} of ${total} founding Desks taken">${pips}</div>
           <div>
             <h3 id="founding-title" class="founding__title"><span data-founding-left>${left}</span> of <span data-founding-total>${total}</span> founding Desks left: $990/month for 3 months.</h3>

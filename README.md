@@ -475,7 +475,7 @@ HoneyB card (served from `/showcase/honeyb/`, outside the JS/CSS budgets; the wh
 5. **`t` matching** is case-insensitive.
 6. **Long personalised headlines** step down in size (over 44 and over 64 characters), so the chip, H1, both CTAs and the risk line still fit above the fold at 360×640.
 7. **"Read more".** The sub-head trims to two lines with a "Read more" button only on phones with a viewport no taller than 760px, which in-app browsers typically have.
-8. **Fit copy.** The Fit line reads `You want price predictions or return promises in your videos.`, as specified in the brand-alignment brief. It replaces the earlier `“guaranteed” returns` workaround and is no longer a deviation from the brief.
+8. **Fit copy.** Originally the brand-alignment brief's `You want price predictions or return promises in your videos.`; replaced on 27 Oct (decision 70). The rule itself still stands in the FAQ ("we never write price or return claims").
 9. **Quote marks.** In the pricing taglines and option cards, the brief's quote marks are treated as delimiters and not shown. The FAQ objections keep theirs.
 10. **FAQ heading.** The brief gave no FAQ headline, so the H2 is simply "FAQ".
 11. **LinkedIn** joins the official-handles box only when `linkedinUrl` is set.
@@ -568,3 +568,9 @@ Brought onto the Cipherframe design system; behaviour, layout, copy (except the 
 67. **The grid breakpoint moved from 900px to 768px, and the swipe row is gone.** Three columns from 768px, one column with 24px gaps below, as briefed. The row stays at about 70% width on desktop (unchanged), so at 768px the cards are about 210px wide; the type fits, but it is the tightest size.
 68. **Dead code removed with the illustrations:** the CSS-animated `.wm` previews and their keyframes, the tap-pulse, `initWorkPreviews`, the "Play concept" buttons and `videos.lending` / `videos.payment`. The lightbox (`dialog.ts`) was reused and extended: several sources, a poster, sound on, a close callback.
 69. **Tests pin Tier B** for the playback checks, and wait for the speaker button to be visible before clicking it: it shows when the `playing` event fires, which can be later than `paused` turning false under load.
+
+### Hero air, founding bar, Fit copy (27 Oct 2026)
+
+70. **Fit list, "Not for you if".** `You're launching a memecoin.` and `You want price predictions or return promises in your videos.` are replaced by `You want a different look for every post.` and `You can't review a style frame within a day.` They describe who the model does not suit (it sells one system and a 12-hour style frame) instead of who is excluded by topic. The exclusions are not gone: the FAQ still says "Do you work with memecoins? No" and "we never write price or return claims", and `llms.txt` says "Never memecoins, never project tokens". Two lines in `index.html` if you want other words.
+71. **Hero air on phones is 96px (was 28px).** It is `clamp(32px, 100svh − 560px, 96px)` under the 52px header, so a normal phone gets about 100px between the logo and the eyebrow and a 640px-tall one gets 84px, with the offer and the risk line still above the fold. A long personalised headline (`?c=` over 44 characters) keeps the old tight 10–28px, because it needs that room itself to stay above the fold at 360×640. Tablet and desktop are unchanged.
+72. **The founding bar has no box.** The glass card (fill, border, radius, padding) is gone; the pips and the two lines sit directly on the page. `foundingSlotsLeft: 0` still hides the whole bar.
